@@ -145,6 +145,15 @@ CREATE TABLE IF NOT EXISTS vistoria_fotos (
     FOREIGN KEY (vistoria_id) REFERENCES vistorias(id) ON DELETE CASCADE
 );
 
+CREATE TABLE IF NOT EXISTS vistoria_links (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    locacao_id INTEGER NOT NULL,
+    token TEXT NOT NULL UNIQUE,
+    ativo INTEGER NOT NULL DEFAULT 1,
+    criado_em TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (locacao_id) REFERENCES locacoes(id) ON DELETE CASCADE
+);
+
 -- Configurações da empresa/locadora que usa este sistema (linha única, id sempre 1).
 -- Permite personalizar o contrato (cláusulas, texto extra, rodapé) e os dados
 -- exibidos sem precisar alterar código -- essencial quando o sistema é vendido
@@ -168,3 +177,4 @@ CREATE INDEX IF NOT EXISTS idx_locacoes_status ON locacoes(status);
 CREATE INDEX IF NOT EXISTS idx_financeiro_status ON financeiro(status);
 CREATE INDEX IF NOT EXISTS idx_financeiro_cliente ON financeiro(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_vistorias_veiculo ON vistorias(veiculo_id);
+CREATE INDEX IF NOT EXISTS idx_vistoria_links_locacao ON vistoria_links(locacao_id);

@@ -1,0 +1,47 @@
+{% extends "base.html" %}
+{% block titulo %}Vistoria do veículo{% endblock %}
+{% block conteudo_publico %}
+<div class="login-page">
+  <div class="login-card" style="max-width:480px">
+    <div class="marca marca-login">
+      <span class="marca-icone">&#128663;</span>
+      <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+    </div>
+
+    <h1 class="login-titulo" style="font-size:19px">Vistoria do veículo</h1>
+    <p class="login-subtitulo" style="margin-bottom:16px">
+      Veículo <strong>{{ link['placa'] }}</strong> — {{ link['marca'] }} {{ link['modelo'] }}<br>
+      Locatário: {{ link['cliente_nome'] }}
+    </p>
+
+    <form method="post" class="form-padrao" enctype="multipart/form-data">
+      <div class="campo">
+        <label>KM atual do veículo *</label>
+        <input type="number" name="km" required inputmode="numeric" placeholder="Ex.: 45230">
+      </div>
+
+      <div class="campo">
+        <label>Fotos do veículo (frente, traseira, laterais, painel — o quanto puder) *</label>
+        <input type="file" name="fotos" accept="image/*" multiple capture="environment" required>
+        <p class="ajuda" style="margin-top:6px">Toque para tirar as fotos pela câmera do celular ou escolher da galeria.</p>
+      </div>
+
+      <div class="campo">
+        <label>Como está o veículo?</label>
+        <select name="condicao_geral">
+          <option value="ok">Tudo certo</option>
+          <option value="atencao">Tem algo para observar (pequeno)</option>
+          <option value="problema">Encontrei um problema</option>
+        </select>
+      </div>
+
+      <div class="campo">
+        <label>Observações (opcional)</label>
+        <textarea name="observacoes" placeholder="Algum arranhão, luz acesa no painel, pneu careca, etc."></textarea>
+      </div>
+
+      <button type="submit" class="btn btn-primario btn-full">Enviar vistoria</button>
+    </form>
+  </div>
+</div>
+{% endblock %}

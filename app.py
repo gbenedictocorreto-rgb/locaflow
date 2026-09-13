@@ -42,7 +42,7 @@ def create_app(config_class=Config):
 
     from routes import (
         auth, dashboard, proprietarios, veiculos, clientes, locacoes, contratos,
-        financeiro, vistorias, usuarios, configuracoes, institucional,
+        financeiro, vistorias, usuarios, configuracoes, institucional, vistoria_publica,
     )
 
     app.register_blueprint(auth.bp)
@@ -57,6 +57,7 @@ def create_app(config_class=Config):
     app.register_blueprint(usuarios.bp)
     app.register_blueprint(configuracoes.bp)
     app.register_blueprint(institucional.bp)
+    app.register_blueprint(vistoria_publica.bp)
 
     # ---- Filtros Jinja ----
     @app.template_filter("moeda")

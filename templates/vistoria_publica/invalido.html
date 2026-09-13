@@ -1,0 +1,17 @@
+{% extends "base.html" %}
+{% block titulo %}Link inválido{% endblock %}
+{% block conteudo_publico %}
+<div class="login-page">
+  <div class="login-card" style="max-width:440px; text-align:center">
+    <div class="marca marca-login" style="justify-content:center">
+      <span class="marca-icone">&#128663;</span>
+      <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+    </div>
+    <p style="font-size:40px; margin:10px 0">&#9888;</p>
+    <h1 class="login-titulo" style="font-size:19px">Link inválido ou desativado</h1>
+    <p class="login-subtitulo">
+      Este link de vistoria não é mais válido. Peça para a locadora gerar um novo link.
+    </p>
+  </div>
+</div>
+{% endblock %}

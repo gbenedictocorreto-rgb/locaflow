@@ -1,5 +1,6 @@
+import secrets
 from datetime import datetime, date
-from flask import Blueprint, render_template, request, redirect, url_for, flash
+from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
 from db import query_all, query_one, execute, get_db
 from services.utils import login_required, admin_required, parse_float, parse_int
 
@@ -152,10 +153,42 @@ def detalhe(id):
     financeiro = query_all("SELECT * FROM financeiro WHERE locacao_id = ? ORDER BY vencimento", (id,))
     vistorias = query_all("SELECT * FROM vistorias WHERE locacao_id = ? ORDER BY data DESC", (id,))
 
+    vistoria_link = query_one(
+        "SELECT * FROM vistoria_links WHERE locacao_id = ? AND ativo = 1 ORDER BY id DESC LIMIT 1", (id,)
+    )
+    vistoria_link_url = None
+    if vistoria_link:
+        base_url = current_app.config["SITE_URL"] or request.url_root.rstrip("/")
+        vistoria_link_url = f"{base_url}{url_for('vistoria_publica.formulario', token=vistoria_link['token'])}"
+
     return render_template(
         "locacoes/detail.html", locacao=locacao, contratos=contratos, financeiro=financeiro,
         vistorias=vistorias, status_labels=STATUS_LABELS, caucao_labels=CAUCAO_LABELS,
+        vistoria_link=vistoria_link, vistoria_link_url=vistoria_link_url,
     )
+
+
+@bp.route("/<int:id>/vistoria-link/gerar", methods=["POST"])
+@login_required
+def vistoria_link_gerar(id):
+    locacao = query_one("SELECT id FROM locacoes WHERE id = ?", (id,))
+    if not locacao:
+        flash("Locação não encontrada.", "erro")
+        return redirect(url_for("locacoes.listar"))
+
+    execute("UPDATE vistoria_links SET ativo = 0 WHERE locacao_id = ? AND ativo = 1", (id,))
+    token = secrets.token_urlsafe(16)
+    execute("INSERT INTO vistoria_links (locacao_id, token) VALUES (?,?)", (id, token))
+    flash("Link de vistoria gerado. Copie e envie para o motorista.", "sucesso")
+    return redirect(url_for("locacoes.detalhe", id=id))
+
+
+@bp.route("/<int:id>/vistoria-link/revogar", methods=["POST"])
+@login_required
+def vistoria_link_revogar(id):
+    execute("UPDATE vistoria_links SET ativo = 0 WHERE locacao_id = ? AND ativo = 1", (id,))
+    flash("Link de vistoria desativado.", "sucesso")
+    return redirect(url_for("locacoes.detalhe", id=id))
 
 
 @bp.route("/<int:id>/finalizar", methods=["GET", "POST"])

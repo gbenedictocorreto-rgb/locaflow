@@ -246,3 +246,7 @@ legend { font-weight: 700; padding: 0 6px; font-size: 13.5px; color: var(--cinza
   .menu-toggle { display: block; }
   .conteudo { padding: 70px 16px 30px; }
 }
+
+/* ---- Link de vistoria copiável (painel da locação) ---- */
+.link-copiavel { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.link-copiavel input[type="text"] { flex: 1 1 260px; min-width: 0; font-family: monospace; font-size: 12.5px; padding: 8px 10px; border: 1px solid var(--cinza-200); border-radius: 8px; background: var(--cinza-100); color: var(--cinza-700); }

@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+{% block titulo %}Vistoria enviada{% endblock %}
+{% block conteudo_publico %}
+<div class="login-page">
+  <div class="login-card" style="max-width:440px; text-align:center">
+    <div class="marca marca-login" style="justify-content:center">
+      <span class="marca-icone">&#128663;</span>
+      <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+    </div>
+    <p style="font-size:40px; margin:10px 0">&#9989;</p>
+    <h1 class="login-titulo" style="font-size:19px">Vistoria enviada com sucesso!</h1>
+    <p class="login-subtitulo">
+      Obrigado{% if link %}, {{ link['cliente_nome'] }}{% endif %}. As fotos e o KM
+      informado já aparecem no sistema da locadora. Você já pode fechar esta página.
+    </p>
+  </div>
+</div>
+{% endblock %}

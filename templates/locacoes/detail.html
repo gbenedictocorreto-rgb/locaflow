@@ -144,6 +144,45 @@
 </div>
 
 <div class="painel">
+  <h2>Link de vistoria para o motorista</h2>
+  <p class="ajuda" style="margin-bottom:12px">
+    Envie este link para o motorista/cliente preencher a vistoria (fotos + KM) pelo
+    celular, sem precisar de login. Assim que ele enviar, a vistoria aparece
+    automaticamente na lista abaixo.
+  </p>
+  {% if vistoria_link %}
+    <div class="link-copiavel">
+      <input type="text" id="linkVistoria" value="{{ vistoria_link_url }}" readonly onclick="this.select()">
+      <button type="button" class="btn btn-sm" onclick="copiarLinkVistoria()">&#128203; Copiar link</button>
+      {% if locacao['cliente_telefone'] %}
+      {% set tel_limpo = locacao['cliente_telefone'] | replace('(', '') | replace(')', '') | replace(' ', '') | replace('-', '') %}
+      <a class="btn btn-sm btn-sucesso" target="_blank" rel="noopener"
+         href="https://wa.me/55{{ tel_limpo }}?text={{ ('Olá! Poderia fazer a vistoria do veículo ' + locacao['placa'] + ' por este link, por favor? ' + vistoria_link_url) | urlencode }}">
+        &#128172; Enviar por WhatsApp
+      </a>
+      {% endif %}
+    </div>
+    <form method="post" action="{{ url_for('locacoes.vistoria_link_revogar', id=locacao['id']) }}" class="form-inline" onsubmit="return confirm('Desativar este link? Ele deixará de funcionar para o motorista.')" style="margin-top:10px">
+      <button type="submit" class="btn btn-sm btn-perigo">Desativar link</button>
+    </form>
+    <script>
+      function copiarLinkVistoria(){
+        var campo = document.getElementById('linkVistoria');
+        campo.select();
+        campo.setSelectionRange(0, 99999);
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(campo.value).catch(function(){});
+        }
+      }
+    </script>
+  {% else %}
+    <form method="post" action="{{ url_for('locacoes.vistoria_link_gerar', id=locacao['id']) }}">
+      <button type="submit" class="btn btn-primario">&#128279; Gerar link de vistoria</button>
+    </form>
+  {% endif %}
+</div>
+
+<div class="painel">
   <h2>Vistorias desta locação</h2>
   {% if vistorias %}
   <div class="tabela-wrap">
