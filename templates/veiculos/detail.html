@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+{% block titulo %}{{ veiculo['placa'] }}{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>{{ veiculo['placa'] }} — {{ veiculo['marca'] }} {{ veiculo['modelo'] }}</h1>
+    <div class="subtitulo">
+      {% set cor = {'disponivel':'verde','alugado':'azul','manutencao':'amarelo','inativo':'cinza'}[veiculo['status']] %}
+      <span class="badge badge-{{ cor }}">{{ status_labels.get(veiculo['status']) }}</span>
+    </div>
+  </div>
+  <div class="acoes">
+    {% if veiculo['status'] == 'disponivel' %}
+    <a href="{{ url_for('locacoes.nova', veiculo_id=veiculo['id']) }}" class="btn btn-primario">+ Nova locação</a>
+    {% endif %}
+    <a href="{{ url_for('vistorias.nova', veiculo_id=veiculo['id']) }}" class="btn">+ Registrar vistoria</a>
+    <a href="{{ url_for('veiculos.editar', id=veiculo['id']) }}" class="btn">Editar</a>
+    {% if usuario_papel == 'admin' %}
+    <form method="post" action="{{ url_for('veiculos.excluir', id=veiculo['id']) }}" class="form-inline" onsubmit="return confirm('Excluir este veículo?')">
+      <button class="btn btn-perigo" type="submit">Excluir</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="duas-colunas">
+  <div class="painel">
+    <h2>Dados do veículo</h2>
+    {% if veiculo['foto_path'] %}
+      <img src="{{ url_for('static', filename=veiculo['foto_path']) }}" class="veiculo-foto" alt="Foto do veículo">
+    {% endif %}
+    <div class="info-grid" style="margin-top:14px">
+      <div class="info-item"><div class="rotulo">Renavam</div><div class="valor-info">{{ veiculo['renavam'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Chassi</div><div class="valor-info">{{ veiculo['chassi'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Cor</div><div class="valor-info">{{ veiculo['cor'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Ano</div><div class="valor-info">{{ veiculo['ano_fabricacao'] or '-' }}/{{ veiculo['ano_modelo'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">KM atual</div><div class="valor-info">{{ '{:,}'.format(veiculo['km_atual']).replace(',', '.') }} km</div></div>
+      <div class="info-item"><div class="rotulo">Diária padrão</div><div class="valor-info">{{ veiculo['valor_diaria_padrao'] | moeda }}</div></div>
+      <div class="info-item"><div class="rotulo">Proprietário</div><div class="valor-info">{{ veiculo['proprietario_nome'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Telefone do proprietário</div><div class="valor-info">{{ veiculo['proprietario_telefone'] or '-' }}</div></div>
+    </div>
+  </div>
+
+  <div class="painel">
+    <h2>Rastreador e seguro</h2>
+    <div class="info-grid">
+      <div class="info-item">
+        <div class="rotulo">Rastreador</div>
+        <div class="valor-info">
+          {% if veiculo['rastreador_link'] %}<a href="{{ veiculo['rastreador_link'] }}" target="_blank">Abrir rastreador ↗</a>{% else %}Não cadastrado{% endif %}
+        </div>
+      </div>
+      <div class="info-item"><div class="rotulo">Login/obs. rastreador</div><div class="valor-info">{{ veiculo['rastreador_login'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Seguradora</div><div class="valor-info">{{ veiculo['seguradora_nome'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Apólice</div><div class="valor-info">{{ veiculo['seguradora_apolice'] or '-' }}</div></div>
+      <div class="info-item">
+        <div class="rotulo">Assistência 24h (reboque)</div>
+        <div class="valor-info">
+          {% if veiculo['seguradora_telefone_24h'] %}<a href="tel:{{ veiculo['seguradora_telefone_24h'] }}">📞 {{ veiculo['seguradora_telefone_24h'] }}</a>{% else %}Não cadastrado{% endif %}
+        </div>
+      </div>
+    </div>
+    {% if veiculo['observacoes'] %}
+    <p style="margin-top:14px"><strong>Observações:</strong> {{ veiculo['observacoes'] }}</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="painel">
+  <h2>Histórico de locações</h2>
+  {% if locacoes %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Cliente</th><th>Início</th><th>Previsão fim</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for l in locacoes %}
+        <tr>
+          <td>{{ l['cliente_nome'] }}</td>
+          <td>{{ l['data_inicio'] | databr }}</td>
+          <td>{{ l['data_fim_prevista'] | databr }}</td>
+          <td><span class="badge badge-azul">{{ l['status'] }}</span></td>
+          <td><a href="{{ url_for('locacoes.detalhe', id=l['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhuma locação registrada para este veículo ainda.</p>
+  {% endif %}
+</div>
+
+<div class="painel">
+  <h2>Últimas vistorias</h2>
+  {% if vistorias %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Data</th><th>Tipo</th><th>KM</th><th>Condição</th><th></th></tr></thead>
+      <tbody>
+        {% for v in vistorias %}
+        <tr>
+          <td>{{ v['data'] | databr }}</td>
+          <td>{{ v['tipo'] }}</td>
+          <td>{{ v['km'] or '-' }}</td>
+          <td>{{ v['condicao_geral'] or '-' }}</td>
+          <td><a href="{{ url_for('vistorias.detalhe', id=v['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhuma vistoria registrada para este veículo ainda.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,85 @@
+{% extends "base.html" %}
+{% block titulo %}Configurações{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Configurações da empresa</h1>
+    <div class="subtitulo">Personalize os dados e o modelo de contrato desta instalação</div>
+  </div>
+</div>
+
+<div class="aviso-box">
+  Essas informações aparecem no cabeçalho do contrato gerado automaticamente. Se você
+  administra este sistema para mais de um cliente/locadora, cada instalação tem sua
+  própria configuração — não precisa alterar nenhum código para personalizar.
+</div>
+
+<form method="post" class="form-padrao" enctype="multipart/form-data">
+  <fieldset>
+    <legend>Dados da empresa</legend>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Nome da empresa/locadora</label>
+        <input type="text" name="nome_empresa" value="{{ config['nome_empresa'] if config else '' }}">
+      </div>
+      <div class="campo">
+        <label>CNPJ</label>
+        <input type="text" name="cnpj" value="{{ config['cnpj'] if config else '' }}">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Endereço</label>
+      <input type="text" name="endereco" value="{{ config['endereco'] if config else '' }}">
+    </div>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Telefone</label>
+        <input type="tel" name="telefone" value="{{ config['telefone'] if config else '' }}">
+      </div>
+      <div class="campo">
+        <label>E-mail</label>
+        <input type="email" name="email" value="{{ config['email'] if config else '' }}">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Logo (aparece no topo do contrato)</label>
+      {% if config and config['logo_path'] %}
+        <div class="foto-preview" style="max-width:160px; margin-bottom:8px">
+          <img src="{{ url_for('static', filename=config['logo_path']) }}" alt="Logo atual">
+        </div>
+      {% endif %}
+      <input type="file" name="logo" accept="image/*">
+      {% if config and config['logo_path'] %}
+      <div class="ajuda">
+        <button type="submit" form="form-remover-logo" class="btn btn-sm" style="margin-top:6px">Remover logo atual</button>
+      </div>
+      {% endif %}
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Modelo do contrato</legend>
+    <div class="campo">
+      <label>Cláusulas do contrato (uma por linha, item "Obrigações do locatário")</label>
+      <textarea name="contrato_clausulas" rows="8">{{ config['contrato_clausulas'] if config and config['contrato_clausulas'] else clausulas_padrao }}</textarea>
+      <div class="ajuda">Cada linha vira uma cláusula numerada no contrato. Edite, adicione ou remova livremente.</div>
+    </div>
+    <div class="campo">
+      <label>Condições específicas adicionais (opcional)</label>
+      <textarea name="contrato_texto_extra" rows="4" placeholder="Ex: limite de KM por dia, política de combustível, taxa de limpeza...">{{ config['contrato_texto_extra'] if config else '' }}</textarea>
+    </div>
+    <div class="campo">
+      <label>Rodapé do contrato</label>
+      <textarea name="contrato_rodape" rows="2">{{ config['contrato_rodape'] if config and config['contrato_rodape'] else rodape_padrao }}</textarea>
+    </div>
+  </fieldset>
+
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario">Salvar configurações</button>
+  </div>
+</form>
+
+{% if config and config['logo_path'] %}
+<form id="form-remover-logo" method="post" action="{{ url_for('configuracoes.remover_logo') }}" onsubmit="return confirm('Remover a logo atual?')"></form>
+{% endif %}
+{% endblock %}

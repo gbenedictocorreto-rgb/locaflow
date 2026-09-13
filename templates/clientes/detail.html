@@ -1,0 +1,109 @@
+{% extends "base.html" %}
+{% block titulo %}{{ cliente['nome'] }}{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>{{ cliente['nome'] }}</h1>
+    <div class="subtitulo">
+      <span class="badge {{ score_labels[score.classificacao].cor }}">{{ score_labels[score.classificacao].texto }}</span>
+      {% if score.ajustado_manualmente %}<span class="badge badge-cinza">ajustado manualmente</span>{% endif %}
+    </div>
+  </div>
+  <div class="acoes">
+    <a href="{{ url_for('locacoes.nova') }}" class="btn btn-primario">+ Nova locação</a>
+    <a href="{{ url_for('clientes.editar', id=cliente['id']) }}" class="btn">Editar</a>
+    {% if usuario_papel == 'admin' %}
+    <form method="post" action="{{ url_for('clientes.excluir', id=cliente['id']) }}" class="form-inline" onsubmit="return confirm('Excluir este cliente?')">
+      <button class="btn btn-perigo" type="submit">Excluir</button>
+    </form>
+    {% endif %}
+  </div>
+</div>
+
+<div class="duas-colunas">
+  <div class="painel">
+    <h2>Dados pessoais</h2>
+    <div class="info-grid">
+      <div class="info-item"><div class="rotulo">CPF</div><div class="valor-info">{{ cliente['cpf'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">RG</div><div class="valor-info">{{ cliente['rg'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">CNH</div><div class="valor-info">{{ cliente['cnh'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Validade CNH</div><div class="valor-info">{{ cliente['cnh_validade'] | databr }}</div></div>
+      <div class="info-item"><div class="rotulo">Telefone</div><div class="valor-info">{{ cliente['telefone'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">E-mail</div><div class="valor-info">{{ cliente['email'] or '-' }}</div></div>
+    </div>
+    <p style="margin-top:12px"><strong>Endereço:</strong> {{ cliente['endereco'] or '-' }}</p>
+  </div>
+
+  <div class="painel">
+    <h2>Antecedentes criminais</h2>
+    {% if cliente['antecedentes_verificado'] %}
+      <p><span class="badge badge-verde">Verificado</span> em {{ cliente['antecedentes_data'] | databr }}</p>
+    {% else %}
+      <p><span class="badge badge-cinza">Ainda não verificado</span></p>
+    {% endif %}
+    {% if cliente['antecedentes_link'] %}
+      <p><a href="{{ cliente['antecedentes_link'] }}" target="_blank">Abrir site de consulta ↗</a></p>
+    {% endif %}
+    {% if cliente['antecedentes_observacao'] %}
+      <p>{{ cliente['antecedentes_observacao'] }}</p>
+    {% endif %}
+
+    <h2 style="margin-top:18px">Resumo financeiro</h2>
+    <div class="info-grid">
+      <div class="info-item"><div class="rotulo">Em aberto</div><div class="valor-info">{{ score.valor_em_aberto | moeda }}</div></div>
+      <div class="info-item"><div class="rotulo">Em atraso</div><div class="valor-info">{{ score.valor_atrasado | moeda }}</div></div>
+      <div class="info-item"><div class="rotulo">Parcelas atrasadas</div><div class="valor-info">{{ score.qtd_atrasados }}</div></div>
+    </div>
+  </div>
+</div>
+
+<div class="painel">
+  <h2>Locações</h2>
+  {% if locacoes %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Veículo</th><th>Início</th><th>Fim previsto</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for l in locacoes %}
+        <tr>
+          <td>{{ l['placa'] }} - {{ l['marca'] }} {{ l['modelo'] }}</td>
+          <td>{{ l['data_inicio'] | databr }}</td>
+          <td>{{ l['data_fim_prevista'] | databr }}</td>
+          <td><span class="badge badge-azul">{{ l['status'] }}</span></td>
+          <td><a href="{{ url_for('locacoes.detalhe', id=l['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhuma locação para este cliente ainda.</p>
+  {% endif %}
+</div>
+
+<div class="painel">
+  <h2>Lançamentos financeiros recentes</h2>
+  {% if financeiro %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Descrição</th><th>Vencimento</th><th>Valor</th><th>Status</th></tr></thead>
+      <tbody>
+        {% for f in financeiro %}
+        <tr>
+          <td>{{ f['descricao'] or f['tipo'] }}</td>
+          <td>{{ f['vencimento'] | databr }}</td>
+          <td>{{ f['valor'] | moeda }}</td>
+          <td>
+            {% set cor = {'pendente':'azul','pago':'verde','atrasado':'vermelho','cancelado':'cinza'}[f['status']] %}
+            <span class="badge badge-{{ cor }}">{{ f['status'] }}</span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhum lançamento financeiro para este cliente.</p>
+  {% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if veiculo else 'Novo' }} veículo{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>{{ 'Editar' if veiculo else 'Novo' }} veículo</h1>
+</div>
+
+<form method="post" class="form-padrao" enctype="multipart/form-data">
+  <fieldset>
+    <legend>Identificação do veículo</legend>
+    <div class="grid-3">
+      <div class="campo">
+        <label>Placa *</label>
+        <input type="text" name="placa" required value="{{ veiculo['placa'] if veiculo else '' }}" style="text-transform:uppercase">
+      </div>
+      <div class="campo">
+        <label>Renavam</label>
+        <input type="text" name="renavam" value="{{ veiculo['renavam'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>Chassi</label>
+        <input type="text" name="chassi" value="{{ veiculo['chassi'] if veiculo else '' }}">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="campo">
+        <label>Marca</label>
+        <input type="text" name="marca" value="{{ veiculo['marca'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>Modelo</label>
+        <input type="text" name="modelo" value="{{ veiculo['modelo'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>Cor</label>
+        <input type="text" name="cor" value="{{ veiculo['cor'] if veiculo else '' }}">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="campo">
+        <label>Ano fabricação</label>
+        <input type="text" name="ano_fabricacao" value="{{ veiculo['ano_fabricacao'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>Ano modelo</label>
+        <input type="text" name="ano_modelo" value="{{ veiculo['ano_modelo'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>KM atual</label>
+        <input type="number" name="km_atual" value="{{ veiculo['km_atual'] if veiculo else 0 }}">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Foto do veículo</label>
+        <input type="file" name="foto" accept="image/*">
+      </div>
+      <div class="campo">
+        <label>Valor da diária padrão (R$)</label>
+        <input type="number" step="0.01" name="valor_diaria_padrao" value="{{ veiculo['valor_diaria_padrao'] if veiculo else 0 }}">
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Propriedade e status</legend>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Proprietário (para quem administra este veículo)</label>
+        <select name="proprietario_id">
+          <option value="">-- Não informado --</option>
+          {% for p in proprietarios %}
+          <option value="{{ p['id'] }}" {{ 'selected' if veiculo and veiculo['proprietario_id'] == p['id'] }}>{{ p['nome'] }}</option>
+          {% endfor %}
+        </select>
+        <div class="ajuda">Cadastre novos proprietários na tela "Proprietários".</div>
+      </div>
+      <div class="campo">
+        <label>Status</label>
+        <select name="status">
+          {% for chave, rotulo in status_labels.items() %}
+          <option value="{{ chave }}" {{ 'selected' if veiculo and veiculo['status'] == chave or (not veiculo and chave=='disponivel') }}>{{ rotulo }}</option>
+          {% endfor %}
+        </select>
+      </div>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Rastreador e seguro</legend>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Link do rastreador</label>
+        <input type="text" name="rastreador_link" value="{{ veiculo['rastreador_link'] if veiculo else '' }}" placeholder="https://...">
+      </div>
+      <div class="campo">
+        <label>Login/observação do rastreador</label>
+        <input type="text" name="rastreador_login" value="{{ veiculo['rastreador_login'] if veiculo else '' }}">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="campo">
+        <label>Seguradora</label>
+        <input type="text" name="seguradora_nome" value="{{ veiculo['seguradora_nome'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>Nº da apólice</label>
+        <input type="text" name="seguradora_apolice" value="{{ veiculo['seguradora_apolice'] if veiculo else '' }}">
+      </div>
+      <div class="campo">
+        <label>Telefone assistência 24h (reboque)</label>
+        <input type="tel" name="seguradora_telefone_24h" value="{{ veiculo['seguradora_telefone_24h'] if veiculo else '' }}">
+      </div>
+    </div>
+  </fieldset>
+
+  <div class="campo">
+    <label>Observações</label>
+    <textarea name="observacoes">{{ veiculo['observacoes'] if veiculo else '' }}</textarea>
+  </div>
+
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario">Salvar</button>
+    <a href="{{ url_for('veiculos.listar') }}" class="btn">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

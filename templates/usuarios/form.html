@@ -1,0 +1,42 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if usuario else 'Novo' }} usuário{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>{{ 'Editar' if usuario else 'Novo' }} usuário</h1>
+</div>
+
+<form method="post" class="form-padrao">
+  <div class="grid-2">
+    <div class="campo">
+      <label>Nome completo *</label>
+      <input type="text" name="nome" required value="{{ usuario['nome'] if usuario else '' }}">
+    </div>
+    <div class="campo">
+      <label>E-mail *</label>
+      <input type="email" name="email" required value="{{ usuario['email'] if usuario else '' }}">
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="campo">
+      <label>Papel</label>
+      <select name="papel" {{ 'disabled' if usuario and usuario['id'] == session.get('usuario_id') }}>
+        {% for chave, rotulo in papel_labels.items() %}
+        <option value="{{ chave }}" {{ 'selected' if usuario and usuario['papel'] == chave or (not usuario and chave=='operador') }}>{{ rotulo }}</option>
+        {% endfor %}
+      </select>
+      {% if usuario and usuario['id'] == session.get('usuario_id') %}
+        <input type="hidden" name="papel" value="{{ usuario['papel'] }}">
+        <div class="ajuda">Você não pode alterar seu próprio papel.</div>
+      {% endif %}
+    </div>
+    <div class="campo">
+      <label>{{ 'Nova senha (deixe em branco para não alterar)' if usuario else 'Senha *' }}</label>
+      <input type="password" name="senha" minlength="6" {{ 'required' if not usuario }}>
+    </div>
+  </div>
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario">Salvar</button>
+    <a href="{{ url_for('usuarios.listar') }}" class="btn">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

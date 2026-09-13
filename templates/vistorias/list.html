@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block titulo %}Vistorias{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Vistorias</h1>
+    <div class="subtitulo">Registro fotográfico semanal dos veículos</div>
+  </div>
+  <a href="{{ url_for('vistorias.nova') }}" class="btn btn-primario">+ Nova vistoria</a>
+</div>
+
+<form class="filtros" method="get">
+  <div class="campo">
+    <label>Veículo</label>
+    <select name="veiculo_id">
+      <option value="">Todos</option>
+      {% for v in veiculos %}
+      <option value="{{ v['id'] }}" {{ 'selected' if veiculo_id == v['id']|string }}>{{ v['placa'] }} - {{ v['marca'] }} {{ v['modelo'] }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn" type="submit">Filtrar</button>
+</form>
+
+<div class="painel">
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Data</th><th>Veículo</th><th>Tipo</th><th>KM</th><th>Condição</th><th>Fotos</th><th></th></tr></thead>
+      <tbody>
+        {% for v in vistorias %}
+        <tr>
+          <td>{{ v['data'] | databr }}</td>
+          <td>{{ v['placa'] }} - {{ v['marca'] }} {{ v['modelo'] }}</td>
+          <td>{{ tipo_labels.get(v['tipo'], v['tipo']) }}</td>
+          <td>{{ v['km'] or '-' }}</td>
+          <td>
+            {% set cor = {'ok':'verde','atencao':'amarelo','problema':'vermelho'}.get(v['condicao_geral'], 'cinza') %}
+            <span class="badge badge-{{ cor }}">{{ condicao_labels.get(v['condicao_geral'], v['condicao_geral'] or '-') }}</span>
+          </td>
+          <td>{{ fotos_count.get(v['id'], 0) }}</td>
+          <td><a href="{{ url_for('vistorias.detalhe', id=v['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="tabela-vazia">Nenhuma vistoria registrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

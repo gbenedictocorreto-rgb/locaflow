@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if cliente else 'Novo' }} cliente{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>{{ 'Editar' if cliente else 'Novo' }} cliente</h1>
+</div>
+
+<form method="post" class="form-padrao">
+  <fieldset>
+    <legend>Dados pessoais</legend>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Nome completo *</label>
+        <input type="text" name="nome" required value="{{ cliente['nome'] if cliente else '' }}">
+      </div>
+      <div class="campo">
+        <label>CPF</label>
+        <input type="text" name="cpf" value="{{ cliente['cpf'] if cliente else '' }}">
+      </div>
+    </div>
+    <div class="grid-3">
+      <div class="campo">
+        <label>RG</label>
+        <input type="text" name="rg" value="{{ cliente['rg'] if cliente else '' }}">
+      </div>
+      <div class="campo">
+        <label>CNH</label>
+        <input type="text" name="cnh" value="{{ cliente['cnh'] if cliente else '' }}">
+      </div>
+      <div class="campo">
+        <label>Validade da CNH</label>
+        <input type="date" name="cnh_validade" value="{{ cliente['cnh_validade'] if cliente else '' }}">
+      </div>
+    </div>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Telefone</label>
+        <input type="tel" name="telefone" value="{{ cliente['telefone'] if cliente else '' }}">
+      </div>
+      <div class="campo">
+        <label>E-mail</label>
+        <input type="email" name="email" value="{{ cliente['email'] if cliente else '' }}">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Endereço</label>
+      <input type="text" name="endereco" value="{{ cliente['endereco'] if cliente else '' }}">
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Antecedentes criminais</legend>
+    <div class="campo checkbox-linha">
+      <input type="checkbox" id="antecedentes_verificado" name="antecedentes_verificado" {{ 'checked' if cliente and cliente['antecedentes_verificado'] }}>
+      <label for="antecedentes_verificado" style="margin:0">Antecedentes já verificados por mim</label>
+    </div>
+    <div class="grid-2">
+      <div class="campo">
+        <label>Data da verificação</label>
+        <input type="date" name="antecedentes_data" value="{{ cliente['antecedentes_data'] if cliente else '' }}">
+      </div>
+      <div class="campo">
+        <label>Link de consulta pública</label>
+        <input type="text" name="antecedentes_link" value="{{ cliente['antecedentes_link'] if cliente and cliente['antecedentes_link'] else link_padrao }}">
+        <div class="ajuda">Sugestão: emissão de certidão de antecedentes no gov.br. Ajuste para o site do estado do cliente, se preferir.</div>
+      </div>
+    </div>
+    <div class="campo">
+      <label>Observação sobre a consulta</label>
+      <textarea name="antecedentes_observacao">{{ cliente['antecedentes_observacao'] if cliente else '' }}</textarea>
+    </div>
+  </fieldset>
+
+  <fieldset>
+    <legend>Score do cliente</legend>
+    <div class="campo">
+      <label>Classificação manual (opcional)</label>
+      <select name="score_manual">
+        <option value="">Automático (calculado pelo histórico financeiro)</option>
+        <option value="bom" {{ 'selected' if cliente and cliente['score_manual'] == 'bom' }}>Bom pagador</option>
+        <option value="regular" {{ 'selected' if cliente and cliente['score_manual'] == 'regular' }}>Atenção</option>
+        <option value="ruim" {{ 'selected' if cliente and cliente['score_manual'] == 'ruim' }}>Inadimplente</option>
+      </select>
+      <div class="ajuda">Deixe em "Automático" para o sistema calcular com base nos pagamentos em atraso.</div>
+    </div>
+  </fieldset>
+
+  <div class="campo">
+    <label>Observações gerais</label>
+    <textarea name="observacoes">{{ cliente['observacoes'] if cliente else '' }}</textarea>
+  </div>
+
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario">Salvar</button>
+    <a href="{{ url_for('clientes.listar') }}" class="btn">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

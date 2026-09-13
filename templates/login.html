@@ -1,0 +1,107 @@
+{% extends "base.html" %}
+{% block titulo %}Entrar{% endblock %}
+{% block conteudo_publico %}
+<div class="login-page login-page--split">
+  <div class="login-ilustracao">
+    <div class="login-ilustracao__conteudo">
+      <div class="marca marca-login">
+        <span class="marca-icone">🚗</span>
+        <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+      </div>
+
+      <svg class="login-svg" viewBox="0 0 480 340" xmlns="http://www.w3.org/2000/svg" role="img" aria-label="Ilustração de um carro em uma rota de gestão inteligente">
+        <defs>
+          <linearGradient id="loginGradBg" x1="0%" y1="0%" x2="100%" y2="100%">
+            <stop offset="0%" stop-color="#ffffff" stop-opacity="0.10" />
+            <stop offset="100%" stop-color="#ffffff" stop-opacity="0" />
+          </linearGradient>
+          <linearGradient id="loginGradCarro" x1="0%" y1="0%" x2="100%" y2="0%">
+            <stop offset="0%" stop-color="#ffffff" />
+            <stop offset="100%" stop-color="#dbe8ff" />
+          </linearGradient>
+        </defs>
+
+        <circle cx="400" cy="70" r="120" fill="url(#loginGradBg)" />
+        <circle cx="60" cy="280" r="90" fill="url(#loginGradBg)" />
+
+        <path d="M20 250 C 120 210, 200 290, 300 240 S 460 200, 470 230"
+              fill="none" stroke="#ffffff" stroke-opacity="0.35" stroke-width="3"
+              stroke-dasharray="2 14" stroke-linecap="round" />
+        <path d="M10 190 C 110 150, 190 230, 290 180 S 450 140, 465 165"
+              fill="none" stroke="#ffffff" stroke-opacity="0.2" stroke-width="3"
+              stroke-dasharray="2 14" stroke-linecap="round" />
+
+        <g transform="translate(90,150)">
+          <ellipse cx="150" cy="128" rx="150" ry="14" fill="#0b1d3a" opacity="0.18" />
+
+          <path d="M18 92
+                   L34 46
+                   C 40 30, 54 22, 71 22
+                   L 214 22
+                   C 232 22, 248 31, 256 46
+                   L 276 82
+                   L 292 88
+                   C 300 91, 305 98, 305 107
+                   L 305 112
+                   C 305 118, 300 123, 293 123
+                   L 271 123
+                   L 265 123
+                   C 262 106, 247 94, 230 94
+                   C 213 94, 199 106, 196 123
+                   L 108 123
+                   C 105 106, 90 94, 73 94
+                   C 56 94, 42 106, 39 123
+                   L 20 123
+                   C 12 123, 6 118, 6 111
+                   L 6 105
+                   C 6 98, 11 93, 18 92 Z"
+                fill="url(#loginGradCarro)" />
+
+          <path d="M64 46 C 68 36, 76 30, 87 30 L 148 30 L 148 68 L 52 68 Z"
+                fill="#284d8f" opacity="0.9" />
+          <path d="M158 30 L 205 30 C 216 30, 226 36, 231 46 L 246 68 L 158 68 Z"
+                fill="#284d8f" opacity="0.9" />
+
+          <circle cx="73" cy="123" r="26" fill="#16233f" />
+          <circle cx="73" cy="123" r="11" fill="#cdd9ef" />
+          <circle cx="230" cy="123" r="26" fill="#16233f" />
+          <circle cx="230" cy="123" r="11" fill="#cdd9ef" />
+
+          <circle cx="284" cy="70" r="4" fill="#ffe27a" />
+        </g>
+
+        <g fill="#ffffff">
+          <circle cx="380" cy="120" r="4" opacity="0.85" />
+          <circle cx="400" cy="105" r="3" opacity="0.6" />
+          <circle cx="415" cy="130" r="2.5" opacity="0.5" />
+          <circle cx="60" cy="90" r="3" opacity="0.6" />
+          <circle cx="90" cy="70" r="2.5" opacity="0.45" />
+        </g>
+      </svg>
+
+      <div class="login-ilustracao__cta">
+        <p>Se você ainda não é um cliente <strong>{{ app_name }}</strong> — {{ app_tagline|lower }} —</p>
+        <a href="{{ demo_contato_link }}" class="btn btn-claro">{{ demo_contato_texto }}</a>
+      </div>
+    </div>
+  </div>
+
+  <div class="login-form-lado">
+    <form method="post" class="login-card login-card--split">
+      <h1 class="login-titulo">Bem-vindo de volta</h1>
+      <p class="login-subtitulo">Entre com sua conta para acessar o painel.</p>
+
+      <label>E-mail</label>
+      <input type="email" name="email" required autofocus placeholder="seu@email.com">
+      <label>Senha</label>
+      <input type="password" name="senha" required placeholder="••••••••">
+
+      <button type="submit" class="btn btn-primario btn-full">Entrar</button>
+
+      <p class="login-esqueci">
+        <a href="{{ url_for('auth.esqueci_senha') }}">Esqueci minha senha</a>
+      </p>
+    </form>
+  </div>
+</div>
+{% endblock %}

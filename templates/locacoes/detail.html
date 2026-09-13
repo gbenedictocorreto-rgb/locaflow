@@ -1,0 +1,170 @@
+{% extends "base.html" %}
+{% block titulo %}Locação #{{ locacao['id'] }}{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Locação #{{ locacao['id'] }} — {{ locacao['placa'] }}</h1>
+    <div class="subtitulo">
+      {% set cor = {'ativa':'verde','finalizada':'cinza','atrasada':'vermelho','cancelada':'amarelo'}[locacao['status']] %}
+      <span class="badge badge-{{ cor }}">{{ status_labels.get(locacao['status'], locacao['status']) }}</span>
+    </div>
+  </div>
+  <div class="acoes">
+    {% if locacao['status'] in ('ativa', 'atrasada') %}
+    <a href="{{ url_for('locacoes.finalizar', id=locacao['id']) }}" class="btn btn-sucesso">Finalizar locação</a>
+    {% if usuario_papel == 'admin' %}
+    <form method="post" action="{{ url_for('locacoes.cancelar', id=locacao['id']) }}" class="form-inline" onsubmit="return confirm('Cancelar esta locação?')">
+      <button type="submit" class="btn btn-perigo">Cancelar</button>
+    </form>
+    {% endif %}
+    {% endif %}
+  </div>
+</div>
+
+<div class="duas-colunas">
+  <div class="painel">
+    <h2>Cliente</h2>
+    <div class="info-grid">
+      <div class="info-item"><div class="rotulo">Nome</div><div class="valor-info"><a href="{{ url_for('clientes.detalhe', id=locacao['cliente_id']) }}">{{ locacao['cliente_nome'] }}</a></div></div>
+      <div class="info-item"><div class="rotulo">CPF</div><div class="valor-info">{{ locacao['cliente_cpf'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Telefone</div><div class="valor-info">{{ locacao['cliente_telefone'] or '-' }}</div></div>
+    </div>
+  </div>
+  <div class="painel">
+    <h2>Veículo</h2>
+    <div class="info-grid">
+      <div class="info-item"><div class="rotulo">Placa</div><div class="valor-info"><a href="{{ url_for('veiculos.detalhe', id=locacao['veiculo_id']) }}">{{ locacao['placa'] }}</a></div></div>
+      <div class="info-item"><div class="rotulo">Modelo</div><div class="valor-info">{{ locacao['marca'] }} {{ locacao['modelo'] }}</div></div>
+      <div class="info-item">
+        <div class="rotulo">Assistência 24h</div>
+        <div class="valor-info">{% if locacao['seguradora_telefone_24h'] %}<a href="tel:{{ locacao['seguradora_telefone_24h'] }}">📞 {{ locacao['seguradora_telefone_24h'] }}</a>{% else %}-{% endif %}</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<div class="painel">
+  <h2>Período, KM e valores</h2>
+  <div class="info-grid">
+    <div class="info-item"><div class="rotulo">Início</div><div class="valor-info">{{ locacao['data_inicio'] | databr }}</div></div>
+    <div class="info-item"><div class="rotulo">Fim previsto</div><div class="valor-info">{{ locacao['data_fim_prevista'] | databr }}</div></div>
+    <div class="info-item"><div class="rotulo">Fim real</div><div class="valor-info">{{ locacao['data_fim_real'] | databr }}</div></div>
+    <div class="info-item"><div class="rotulo">KM inicial</div><div class="valor-info">{{ locacao['km_inicial'] if locacao['km_inicial'] is not none else '-' }}</div></div>
+    <div class="info-item"><div class="rotulo">KM final</div><div class="valor-info">{{ locacao['km_final'] if locacao['km_final'] is not none else '-' }}</div></div>
+    <div class="info-item"><div class="rotulo">KM rodado</div>
+      <div class="valor-info">
+        {% if locacao['km_final'] is not none and locacao['km_inicial'] is not none %}
+          {{ locacao['km_final'] - locacao['km_inicial'] }} km
+        {% else %} - {% endif %}
+      </div>
+    </div>
+    <div class="info-item"><div class="rotulo">Valor diária</div><div class="valor-info">{{ locacao['valor_diaria'] | moeda }}</div></div>
+    <div class="info-item"><div class="rotulo">Total previsto</div><div class="valor-info">{{ locacao['valor_total_previsto'] | moeda }}</div></div>
+    <div class="info-item"><div class="rotulo">Caução</div>
+      <div class="valor-info">{{ locacao['caucao_valor'] | moeda }} — {{ caucao_labels.get(locacao['caucao_status'], locacao['caucao_status']) }}</div>
+    </div>
+  </div>
+  {% if locacao['observacoes'] %}<p style="margin-top:12px"><strong>Observações:</strong> {{ locacao['observacoes'] }}</p>{% endif %}
+</div>
+
+<div class="painel">
+  <h2>Contrato</h2>
+  {% if contratos %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Tipo</th><th>Arquivo</th><th>Data</th><th></th></tr></thead>
+      <tbody>
+        {% for c in contratos %}
+        <tr>
+          <td>{{ 'Gerado automaticamente' if c['tipo'] == 'gerado' else 'Upload manual' }}</td>
+          <td><a href="{{ url_for('static', filename=c['arquivo_path']) }}" target="_blank">{{ c['nome_original'] or 'contrato.pdf' }}</a></td>
+          <td>{{ c['criado_em'] | datahorabr }}</td>
+          <td>
+            {% if usuario_papel == 'admin' %}
+            <form method="post" action="{{ url_for('contratos.excluir', id=c['id']) }}" class="form-inline" onsubmit="return confirm('Remover este contrato?')">
+              <button class="btn btn-sm btn-perigo" type="submit">Remover</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhum contrato anexado ainda.</p>
+  {% endif %}
+
+  <div class="duas-colunas" style="margin-top:14px">
+    <form method="post" action="{{ url_for('contratos.gerar', locacao_id=locacao['id']) }}">
+      <p class="ajuda" style="margin-bottom:8px">Gera automaticamente um contrato em PDF preenchido com os dados desta locação.</p>
+      <button type="submit" class="btn btn-primario">📄 Gerar contrato automaticamente</button>
+    </form>
+    <form method="post" action="{{ url_for('contratos.upload', locacao_id=locacao['id']) }}" enctype="multipart/form-data">
+      <p class="ajuda" style="margin-bottom:8px">Ou envie um contrato próprio (PDF, imagem ou Word).</p>
+      <input type="file" name="arquivo" required>
+      <button type="submit" class="btn" style="margin-top:8px">⬆ Enviar contrato</button>
+    </form>
+  </div>
+</div>
+
+<div class="painel">
+  <h2>Financeiro desta locação</h2>
+  {% if financeiro %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Tipo</th><th>Descrição</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for f in financeiro %}
+        <tr>
+          <td>{{ f['tipo'] }}</td>
+          <td>{{ f['descricao'] }}</td>
+          <td>{{ f['vencimento'] | databr }}</td>
+          <td>{{ f['valor'] | moeda }}</td>
+          <td>
+            {% set cor = {'pendente':'azul','pago':'verde','atrasado':'vermelho','cancelado':'cinza'}[f['status']] %}
+            <span class="badge badge-{{ cor }}">{{ f['status'] }}</span>
+          </td>
+          <td class="acoes">
+            {% if f['status'] in ('pendente','atrasado') %}
+            <form method="post" action="{{ url_for('financeiro.pagar', id=f['id']) }}" class="form-inline">
+              <button class="btn btn-sm btn-sucesso" type="submit">Marcar pago</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhum lançamento financeiro para esta locação.</p>
+  {% endif %}
+  <a href="{{ url_for('financeiro.novo') }}" class="btn btn-sm" style="margin-top:10px">+ Novo lançamento</a>
+</div>
+
+<div class="painel">
+  <h2>Vistorias desta locação</h2>
+  {% if vistorias %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Data</th><th>Tipo</th><th>KM</th><th>Condição</th><th></th></tr></thead>
+      <tbody>
+        {% for v in vistorias %}
+        <tr>
+          <td>{{ v['data'] | databr }}</td>
+          <td>{{ v['tipo'] }}</td>
+          <td>{{ v['km'] or '-' }}</td>
+          <td>{{ v['condicao_geral'] or '-' }}</td>
+          <td><a href="{{ url_for('vistorias.detalhe', id=v['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhuma vistoria registrada para esta locação.</p>
+  {% endif %}
+  <a href="{{ url_for('vistorias.nova', veiculo_id=locacao['veiculo_id'], locacao_id=locacao['id']) }}" class="btn btn-sm" style="margin-top:10px">+ Registrar vistoria</a>
+</div>
+{% endblock %}

@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+{% block titulo %}{{ 'Editar' if proprietario else 'Novo' }} proprietário{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>{{ 'Editar' if proprietario else 'Novo' }} proprietário</h1>
+</div>
+
+<form method="post" class="form-padrao">
+  <div class="grid-2">
+    <div class="campo">
+      <label>Nome completo *</label>
+      <input type="text" name="nome" required value="{{ proprietario['nome'] if proprietario else '' }}">
+    </div>
+    <div class="campo">
+      <label>CPF/CNPJ</label>
+      <input type="text" name="documento" value="{{ proprietario['documento'] if proprietario else '' }}">
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="campo">
+      <label>Telefone</label>
+      <input type="tel" name="telefone" value="{{ proprietario['telefone'] if proprietario else '' }}">
+    </div>
+    <div class="campo">
+      <label>E-mail</label>
+      <input type="email" name="email" value="{{ proprietario['email'] if proprietario else '' }}">
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="campo">
+      <label>Chave PIX (para repasses)</label>
+      <input type="text" name="chave_pix" value="{{ proprietario['chave_pix'] if proprietario else '' }}">
+    </div>
+    <div class="campo">
+      <label>% de repasse ao proprietário</label>
+      <input type="number" step="0.01" name="percentual_repasse" value="{{ proprietario['percentual_repasse'] if proprietario and proprietario['percentual_repasse'] is not none else '' }}">
+    </div>
+  </div>
+  <div class="campo">
+    <label>Observações</label>
+    <textarea name="observacoes">{{ proprietario['observacoes'] if proprietario else '' }}</textarea>
+  </div>
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario">Salvar</button>
+    <a href="{{ url_for('proprietarios.listar') }}" class="btn">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

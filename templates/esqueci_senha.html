@@ -1,0 +1,45 @@
+{% extends "base.html" %}
+{% block titulo %}Esqueci minha senha{% endblock %}
+{% block conteudo_publico %}
+<div class="login-page">
+  <div class="login-card">
+    <div class="marca marca-login">
+      <span class="marca-icone">🚗</span>
+      <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+    </div>
+
+    {% if not enviado %}
+      <p style="font-size:13.5px; color:var(--cinza-700); margin-bottom:14px">
+        Informe o e-mail cadastrado. Se ele existir no sistema, enviaremos um
+        link para você criar uma nova senha.
+      </p>
+      <form method="post">
+        <label>E-mail</label>
+        <input type="email" name="email" required autofocus placeholder="seu@email.com">
+        <button type="submit" class="btn btn-primario btn-full">Enviar link de redefinição</button>
+      </form>
+    {% else %}
+      {% if link_para_exibir %}
+        <div class="aviso-box" style="text-align:left">
+          Este sistema ainda não tem envio de e-mail configurado (variável
+          <code>MAIL_SERVER</code>), então aqui está o link de redefinição
+          diretamente:
+        </div>
+        <p style="word-break:break-all; font-size:13px;">
+          <a href="{{ link_para_exibir }}">{{ link_para_exibir }}</a>
+        </p>
+      {% else %}
+        <p style="font-size:14px; color:var(--cinza-700)">
+          Se o e-mail informado existir em nossa base, enviamos um link de
+          redefinição de senha para ele. Verifique sua caixa de entrada (e o
+          spam).
+        </p>
+      {% endif %}
+    {% endif %}
+
+    <p style="margin-top:16px; font-size:13px; text-align:center">
+      <a href="{{ url_for('auth.login') }}">← Voltar para o login</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

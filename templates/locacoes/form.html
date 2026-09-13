@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% block titulo %}Nova locação{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>Nova locação</h1>
+</div>
+
+{% if not veiculos %}
+<div class="aviso-box">Não há veículos disponíveis no momento. Finalize uma locação ativa ou cadastre um novo veículo.</div>
+{% endif %}
+
+<form method="post" class="form-padrao">
+  <div class="grid-2">
+    <div class="campo">
+      <label>Cliente *</label>
+      <select name="cliente_id" required>
+        <option value="">-- Selecione --</option>
+        {% for c in clientes %}
+        <option value="{{ c['id'] }}">{{ c['nome'] }}{% if c['cpf'] %} - {{ c['cpf'] }}{% endif %}</option>
+        {% endfor %}
+      </select>
+      <div class="ajuda">Cliente não cadastrado? <a href="{{ url_for('clientes.novo') }}" target="_blank">Cadastre aqui</a>.</div>
+    </div>
+    <div class="campo">
+      <label>Veículo *</label>
+      <select name="veiculo_id" id="veiculo_id" required>
+        <option value="">-- Selecione --</option>
+        {% for v in veiculos %}
+        <option value="{{ v['id'] }}" data-diaria="{{ v['valor_diaria_padrao'] }}" data-km="{{ v['km_atual'] }}"
+          {{ 'selected' if veiculo_pre == v['id'] }}>{{ v['placa'] }} - {{ v['marca'] }} {{ v['modelo'] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="campo">
+      <label>Data de início *</label>
+      <input type="date" name="data_inicio" required>
+    </div>
+    <div class="campo">
+      <label>Data prevista de devolução</label>
+      <input type="date" name="data_fim_prevista">
+    </div>
+  </div>
+
+  <div class="grid-2">
+    <div class="campo">
+      <label>KM inicial (na entrega do carro)</label>
+      <input type="number" name="km_inicial" id="km_inicial">
+    </div>
+    <div class="campo">
+      <label>Valor da diária (R$) *</label>
+      <input type="number" step="0.01" name="valor_diaria" id="valor_diaria" required>
+    </div>
+  </div>
+
+  <div class="campo">
+    <label>Valor da caução (R$)</label>
+    <input type="number" step="0.01" name="caucao_valor" value="0">
+    <div class="ajuda">Deixe 0 se não houver cobrança de caução para esta locação.</div>
+  </div>
+
+  <div class="campo">
+    <label>Observações</label>
+    <textarea name="observacoes"></textarea>
+  </div>
+
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario" {{ 'disabled' if not veiculos }}>Criar locação</button>
+    <a href="{{ url_for('locacoes.listar') }}" class="btn">Cancelar</a>
+  </div>
+</form>
+
+<script>
+  const selectVeiculo = document.getElementById('veiculo_id');
+  const campoDiaria = document.getElementById('valor_diaria');
+  const campoKm = document.getElementById('km_inicial');
+  function preencherAutomatico() {
+    const opt = selectVeiculo.options[selectVeiculo.selectedIndex];
+    if (!opt || !opt.value) return;
+    if (!campoDiaria.value || campoDiaria.value == '0') campoDiaria.value = opt.dataset.diaria || 0;
+    if (!campoKm.value) campoKm.value = opt.dataset.km || 0;
+  }
+  selectVeiculo.addEventListener('change', preencherAutomatico);
+  if (selectVeiculo.value) preencherAutomatico();
+</script>
+{% endblock %}

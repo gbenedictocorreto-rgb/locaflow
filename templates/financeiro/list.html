@@ -1,0 +1,71 @@
+{% extends "base.html" %}
+{% block titulo %}Financeiro{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Financeiro</h1>
+    <div class="subtitulo">Valores a receber, pagos e em atraso</div>
+  </div>
+  <a href="{{ url_for('financeiro.novo') }}" class="btn btn-primario">+ Novo lançamento</a>
+</div>
+
+<div class="cards-grid">
+  <div class="card destaque-azul"><div class="rotulo">A receber</div><div class="valor">{{ (resumo['a_receber'] or 0) | moeda }}</div></div>
+  <div class="card destaque-vermelho"><div class="rotulo">Em atraso</div><div class="valor">{{ (resumo['atrasado'] or 0) | moeda }}</div></div>
+  <div class="card destaque-verde"><div class="rotulo">Já recebido</div><div class="valor">{{ (resumo['recebido'] or 0) | moeda }}</div></div>
+</div>
+
+<form class="filtros" method="get">
+  <div class="campo">
+    <label>Status</label>
+    <select name="status">
+      <option value="">Todos</option>
+      {% for chave, rotulo in status_labels.items() %}
+      <option value="{{ chave }}" {{ 'selected' if status == chave }}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn" type="submit">Filtrar</button>
+</form>
+
+<div class="painel">
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Cliente</th><th>Tipo</th><th>Descrição</th><th>Vencimento</th><th>Valor</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for f in lancamentos %}
+        <tr>
+          <td><a href="{{ url_for('clientes.detalhe', id=f['cliente_id']) }}">{{ f['cliente_nome'] }}</a></td>
+          <td>{{ tipo_labels.get(f['tipo'], f['tipo']) }}</td>
+          <td>{{ f['descricao'] or '-' }}</td>
+          <td>{{ f['vencimento'] | databr }}</td>
+          <td>{{ f['valor'] | moeda }}</td>
+          <td>
+            {% set cor = {'pendente':'azul','pago':'verde','atrasado':'vermelho','cancelado':'cinza'}[f['status']] %}
+            <span class="badge badge-{{ cor }}">{{ status_labels.get(f['status'], f['status']) }}</span>
+          </td>
+          <td class="acoes">
+            {% if f['status'] in ('pendente','atrasado') %}
+            <form method="post" action="{{ url_for('financeiro.pagar', id=f['id']) }}" class="form-inline">
+              <button class="btn btn-sm btn-sucesso" type="submit">Marcar pago</button>
+            </form>
+            {% if usuario_papel == 'admin' %}
+            <form method="post" action="{{ url_for('financeiro.cancelar', id=f['id']) }}" class="form-inline" onsubmit="return confirm('Cancelar este lançamento?')">
+              <button class="btn btn-sm btn-perigo" type="submit">Cancelar</button>
+            </form>
+            {% endif %}
+            {% elif usuario_papel == 'admin' %}
+            <form method="post" action="{{ url_for('financeiro.excluir', id=f['id']) }}" class="form-inline" onsubmit="return confirm('Excluir este lançamento?')">
+              <button class="btn btn-sm" type="submit">Excluir</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="tabela-vazia">Nenhum lançamento encontrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

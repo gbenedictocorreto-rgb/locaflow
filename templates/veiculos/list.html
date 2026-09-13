@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block titulo %}Veículos{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Veículos</h1>
+    <div class="subtitulo">Frota administrada</div>
+  </div>
+  <a href="{{ url_for('veiculos.novo') }}" class="btn btn-primario">+ Novo veículo</a>
+</div>
+
+<form class="filtros" method="get">
+  <div class="campo">
+    <label>Buscar</label>
+    <input type="text" name="q" value="{{ busca }}" placeholder="Placa, marca ou modelo">
+  </div>
+  <div class="campo">
+    <label>Status</label>
+    <select name="status">
+      <option value="">Todos</option>
+      {% for chave, rotulo in status_labels.items() %}
+      <option value="{{ chave }}" {{ 'selected' if status == chave }}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn" type="submit">Filtrar</button>
+</form>
+
+<div class="painel">
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Placa</th><th>Veículo</th><th>Cor</th><th>KM atual</th><th>Proprietário</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for v in veiculos %}
+        <tr>
+          <td><strong>{{ v['placa'] }}</strong></td>
+          <td>{{ v['marca'] }} {{ v['modelo'] }}</td>
+          <td>{{ v['cor'] or '-' }}</td>
+          <td>{{ '{:,}'.format(v['km_atual']).replace(',', '.') }} km</td>
+          <td>{{ v['proprietario_nome'] or '-' }}</td>
+          <td>
+            {% set cor = {'disponivel':'verde','alugado':'azul','manutencao':'amarelo','inativo':'cinza'}[v['status']] %}
+            <span class="badge badge-{{ cor }}">{{ status_labels.get(v['status'], v['status']) }}</span>
+          </td>
+          <td class="acoes">
+            <a href="{{ url_for('veiculos.detalhe', id=v['id']) }}" class="btn btn-sm">Ver</a>
+            <a href="{{ url_for('veiculos.editar', id=v['id']) }}" class="btn btn-sm">Editar</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="tabela-vazia">Nenhum veículo cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block titulo %}Locações{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Locações</h1>
+    <div class="subtitulo">Controle de quem está com qual carro</div>
+  </div>
+  <a href="{{ url_for('locacoes.nova') }}" class="btn btn-primario">+ Nova locação</a>
+</div>
+
+<form class="filtros" method="get">
+  <div class="campo">
+    <label>Status</label>
+    <select name="status">
+      <option value="">Todos</option>
+      {% for chave, rotulo in status_labels.items() %}
+      <option value="{{ chave }}" {{ 'selected' if status == chave }}>{{ rotulo }}</option>
+      {% endfor %}
+    </select>
+  </div>
+  <button class="btn" type="submit">Filtrar</button>
+</form>
+
+<div class="painel">
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Cliente</th><th>Veículo</th><th>Início</th><th>Fim previsto</th><th>Diária</th><th>Status</th><th></th></tr></thead>
+      <tbody>
+        {% for l in locacoes %}
+        <tr>
+          <td>{{ l['cliente_nome'] }}</td>
+          <td>{{ l['placa'] }} - {{ l['marca'] }} {{ l['modelo'] }}</td>
+          <td>{{ l['data_inicio'] | databr }}</td>
+          <td>{{ l['data_fim_prevista'] | databr }}</td>
+          <td>{{ l['valor_diaria'] | moeda }}</td>
+          <td>
+            {% set cor = {'ativa':'verde','finalizada':'cinza','atrasada':'vermelho','cancelada':'amarelo'}[l['status']] %}
+            <span class="badge badge-{{ cor }}">{{ status_labels.get(l['status'], l['status']) }}</span>
+          </td>
+          <td><a href="{{ url_for('locacoes.detalhe', id=l['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% else %}
+        <tr><td colspan="7" class="tabela-vazia">Nenhuma locação encontrada.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

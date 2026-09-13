@@ -1,0 +1,64 @@
+{% extends "base.html" %}
+{% block titulo %}Nova vistoria{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>Registrar vistoria</h1>
+</div>
+
+<form method="post" class="form-padrao" enctype="multipart/form-data">
+  <div class="grid-2">
+    <div class="campo">
+      <label>Veículo *</label>
+      <select name="veiculo_id" required>
+        <option value="">-- Selecione --</option>
+        {% for v in veiculos %}
+        <option value="{{ v['id'] }}" {{ 'selected' if veiculo_pre == v['id'] }}>{{ v['placa'] }} - {{ v['marca'] }} {{ v['modelo'] }}</option>
+        {% endfor %}
+      </select>
+    </div>
+    <div class="campo">
+      <label>Tipo de vistoria</label>
+      <select name="tipo">
+        <option value="semanal">Semanal</option>
+        <option value="entrada">Entrada (início da locação)</option>
+        <option value="saida">Saída (devolução)</option>
+        <option value="avulsa">Avulsa</option>
+      </select>
+    </div>
+  </div>
+  <div class="grid-2">
+    <div class="campo">
+      <label>Data *</label>
+      <input type="date" name="data" required>
+    </div>
+    <div class="campo">
+      <label>KM no momento da vistoria</label>
+      <input type="number" name="km">
+    </div>
+  </div>
+  <div class="campo">
+    <label>Condição geral</label>
+    <select name="condicao_geral">
+      <option value="ok">Tudo certo</option>
+      <option value="atencao">Atenção (pequenos problemas)</option>
+      <option value="problema">Problema encontrado</option>
+    </select>
+  </div>
+  <div class="campo">
+    <label>Fotos da vistoria (pode selecionar várias)</label>
+    <input type="file" name="fotos" accept="image/*" multiple capture="environment">
+  </div>
+  <div class="campo">
+    <label>Observações</label>
+    <textarea name="observacoes"></textarea>
+  </div>
+  {% if locacao_pre %}<input type="hidden" name="locacao_id" value="{{ locacao_pre }}">{% endif %}
+  <div class="acoes">
+    <button type="submit" class="btn btn-primario">Salvar vistoria</button>
+    <a href="{{ url_for('vistorias.listar') }}" class="btn">Cancelar</a>
+  </div>
+</form>
+<script>
+  document.querySelector('input[name="data"]').valueAsDate = new Date();
+</script>
+{% endblock %}

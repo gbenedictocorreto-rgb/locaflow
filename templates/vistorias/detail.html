@@ -1,0 +1,39 @@
+{% extends "base.html" %}
+{% block titulo %}Vistoria #{{ vistoria['id'] }}{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Vistoria — {{ vistoria['placa'] }}</h1>
+    <div class="subtitulo">{{ vistoria['data'] | databr }} · {{ tipo_labels.get(vistoria['tipo'], vistoria['tipo']) }}</div>
+  </div>
+  {% if usuario_papel == 'admin' %}
+  <form method="post" action="{{ url_for('vistorias.excluir', id=vistoria['id']) }}" onsubmit="return confirm('Excluir esta vistoria e suas fotos?')">
+    <button class="btn btn-perigo" type="submit">Excluir vistoria</button>
+  </form>
+  {% endif %}
+</div>
+
+<div class="painel">
+  <div class="info-grid">
+    <div class="info-item"><div class="rotulo">Veículo</div><div class="valor-info">{{ vistoria['placa'] }} - {{ vistoria['marca'] }} {{ vistoria['modelo'] }}</div></div>
+    <div class="info-item"><div class="rotulo">KM</div><div class="valor-info">{{ vistoria['km'] or '-' }}</div></div>
+    <div class="info-item"><div class="rotulo">Condição geral</div><div class="valor-info">{{ condicao_labels.get(vistoria['condicao_geral'], vistoria['condicao_geral'] or '-') }}</div></div>
+  </div>
+  {% if vistoria['observacoes'] %}<p style="margin-top:12px"><strong>Observações:</strong> {{ vistoria['observacoes'] }}</p>{% endif %}
+</div>
+
+<div class="painel">
+  <h2>Fotos ({{ fotos | length }})</h2>
+  {% if fotos %}
+  <div class="fotos-grid">
+    {% for f in fotos %}
+    <a href="{{ url_for('static', filename=f['arquivo_path']) }}" target="_blank">
+      <img src="{{ url_for('static', filename=f['arquivo_path']) }}" alt="Foto da vistoria">
+    </a>
+    {% endfor %}
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhuma foto anexada a esta vistoria.</p>
+  {% endif %}
+</div>
+{% endblock %}

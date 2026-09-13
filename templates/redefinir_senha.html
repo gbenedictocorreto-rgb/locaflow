@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block titulo %}Redefinir senha{% endblock %}
+{% block conteudo_publico %}
+<div class="login-page">
+  <div class="login-card">
+    <div class="marca marca-login">
+      <span class="marca-icone">🚗</span>
+      <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+    </div>
+
+    {% if not valido %}
+      <div class="aviso-box" style="text-align:left">
+        Este link de redefinição de senha é inválido, já foi usado ou expirou.
+      </div>
+      <p style="font-size:13px; text-align:center">
+        <a href="{{ url_for('auth.esqueci_senha') }}">Solicitar um novo link</a>
+      </p>
+    {% else %}
+      <form method="post">
+        <label>Nova senha</label>
+        <input type="password" name="senha_nova" required minlength="6" placeholder="Mínimo 6 caracteres">
+        <label>Confirme a nova senha</label>
+        <input type="password" name="senha_confirmar" required minlength="6">
+        <button type="submit" class="btn btn-primario btn-full">Redefinir senha</button>
+      </form>
+    {% endif %}
+
+    <p style="margin-top:16px; font-size:13px; text-align:center">
+      <a href="{{ url_for('auth.login') }}">← Voltar para o login</a>
+    </p>
+  </div>
+</div>
+{% endblock %}

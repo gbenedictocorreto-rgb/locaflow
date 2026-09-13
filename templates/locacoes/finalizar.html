@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block titulo %}Finalizar locação{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <h1>Finalizar locação #{{ locacao['id'] }}</h1>
+</div>
+
+<form method="post" class="form-padrao">
+  <div class="campo">
+    <label>Data de devolução</label>
+    <input type="date" name="data_fim_real" value="{{ locacao['data_fim_real'] or '' }}">
+  </div>
+  <div class="campo">
+    <label>KM final (na devolução)</label>
+    <input type="number" name="km_final" value="{{ locacao['km_final'] if locacao['km_final'] is not none else veiculo['km_atual'] }}">
+    <div class="ajuda">KM inicial registrado: {{ locacao['km_inicial'] if locacao['km_inicial'] is not none else '-' }}</div>
+  </div>
+  {% if locacao['caucao_valor'] and locacao['caucao_valor'] > 0 %}
+  <div class="campo">
+    <label>O que fazer com a caução ({{ locacao['caucao_valor'] | moeda }})?</label>
+    <select name="caucao_status">
+      {% for chave, rotulo in caucao_labels.items() %}
+      {% if chave != 'sem_caucao' %}
+      <option value="{{ chave }}" {{ 'selected' if locacao['caucao_status'] == chave }}>{{ rotulo }}</option>
+      {% endif %}
+      {% endfor %}
+    </select>
+  </div>
+  {% else %}
+  <input type="hidden" name="caucao_status" value="sem_caucao">
+  {% endif %}
+  <div class="acoes">
+    <button type="submit" class="btn btn-sucesso">Confirmar devolução e finalizar</button>
+    <a href="{{ url_for('locacoes.detalhe', id=locacao['id']) }}" class="btn">Cancelar</a>
+  </div>
+</form>
+{% endblock %}

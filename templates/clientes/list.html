@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block titulo %}Clientes{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Clientes</h1>
+    <div class="subtitulo">Locatários cadastrados e sua classificação de risco</div>
+  </div>
+  <a href="{{ url_for('clientes.novo') }}" class="btn btn-primario">+ Novo cliente</a>
+</div>
+
+<form class="filtros" method="get">
+  <div class="campo">
+    <label>Buscar</label>
+    <input type="text" name="q" value="{{ busca }}" placeholder="Nome ou CPF">
+  </div>
+  <button class="btn" type="submit">Filtrar</button>
+</form>
+
+<div class="painel">
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Nome</th><th>CPF</th><th>Telefone</th><th>Antecedentes</th><th>Score</th><th></th></tr></thead>
+      <tbody>
+        {% for item in lista %}
+        {% set c = item.cliente %}
+        {% set s = item.score %}
+        <tr>
+          <td><a href="{{ url_for('clientes.detalhe', id=c['id']) }}">{{ c['nome'] }}</a></td>
+          <td>{{ c['cpf'] or '-' }}</td>
+          <td>{{ c['telefone'] or '-' }}</td>
+          <td>
+            {% if c['antecedentes_verificado'] %}
+              <span class="badge badge-verde">Verificado</span>
+            {% else %}
+              <span class="badge badge-cinza">Pendente</span>
+            {% endif %}
+          </td>
+          <td><span class="badge {{ score_labels[s.classificacao].cor }}">{{ score_labels[s.classificacao].texto }}</span></td>
+          <td class="acoes">
+            <a href="{{ url_for('clientes.detalhe', id=c['id']) }}" class="btn btn-sm">Ver</a>
+            <a href="{{ url_for('clientes.editar', id=c['id']) }}" class="btn btn-sm">Editar</a>
+          </td>
+        </tr>
+        {% else %}
+        <tr><td colspan="6" class="tabela-vazia">Nenhum cliente cadastrado.</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+</div>
+{% endblock %}

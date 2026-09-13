@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block titulo %}Painel{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>Painel geral</h1>
+    <div class="subtitulo">Visão geral da sua operação de locação</div>
+  </div>
+</div>
+
+<div class="cards-grid">
+  <div class="card destaque-azul">
+    <div class="rotulo">Veículos</div>
+    <div class="valor">{{ total_veiculos }} <small>total</small></div>
+    <div class="subtitulo">{{ veiculos_status.get('disponivel', 0) }} disponíveis · {{ veiculos_status.get('alugado', 0) }} alugados · {{ veiculos_status.get('manutencao', 0) }} em manutenção</div>
+  </div>
+  <div class="card destaque-verde">
+    <div class="rotulo">A receber (em aberto)</div>
+    <div class="valor">{{ (financeiro_resumo['a_receber'] or 0) | moeda }}</div>
+    <div class="subtitulo">Recebido este mês: {{ (financeiro_resumo['recebido_mes'] or 0) | moeda }}</div>
+  </div>
+  <div class="card destaque-vermelho">
+    <div class="rotulo">Em atraso</div>
+    <div class="valor">{{ (financeiro_resumo['atrasado'] or 0) | moeda }}</div>
+    <div class="subtitulo">{{ clientes_inadimplentes | length }} cliente(s) com pendência</div>
+  </div>
+  <div class="card destaque-amarelo">
+    <div class="rotulo">Locações ativas</div>
+    <div class="valor">{{ locacoes_status.get('ativa', 0) }}</div>
+    <div class="subtitulo">{{ locacoes_status.get('atrasada', 0) }} atrasada(s) na devolução</div>
+  </div>
+</div>
+
+<div class="duas-colunas">
+  <div class="painel">
+    <h2>⚠️ Clientes com pagamentos em atraso</h2>
+    {% if clientes_inadimplentes %}
+    <div class="tabela-wrap">
+      <table class="painel-tabela">
+        <thead><tr><th>Cliente</th><th>Parcelas atrasadas</th><th>Valor</th><th></th></tr></thead>
+        <tbody>
+          {% for c in clientes_inadimplentes %}
+          <tr>
+            <td>{{ c['nome'] }}</td>
+            <td>{{ c['qtd_atrasados'] }}</td>
+            <td>{{ c['valor_atrasado'] | moeda }}</td>
+            <td><a href="{{ url_for('clientes.detalhe', id=c['id']) }}" class="btn btn-sm">Ver</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="subtitulo">Nenhum cliente inadimplente no momento. 🎉</p>
+    {% endif %}
+  </div>
+
+  <div class="painel">
+    <h2>📅 Devoluções nos próximos 3 dias</h2>
+    {% if proximas_locacoes_vencendo %}
+    <div class="tabela-wrap">
+      <table class="painel-tabela">
+        <thead><tr><th>Cliente</th><th>Veículo</th><th>Previsão</th><th></th></tr></thead>
+        <tbody>
+          {% for l in proximas_locacoes_vencendo %}
+          <tr>
+            <td>{{ l['cliente_nome'] }}</td>
+            <td>{{ l['placa'] }}</td>
+            <td>{{ l['data_fim_prevista'] | databr }}</td>
+            <td><a href="{{ url_for('locacoes.detalhe', id=l['id']) }}" class="btn btn-sm">Ver</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="subtitulo">Nenhuma devolução prevista para os próximos dias.</p>
+    {% endif %}
+  </div>
+</div>
+
+<div class="duas-colunas">
+  <div class="painel">
+    <h2>🔍 Veículos alugados sem vistoria há mais de 7 dias</h2>
+    {% if veiculos_sem_vistoria_recente %}
+    <div class="tabela-wrap">
+      <table class="painel-tabela">
+        <thead><tr><th>Veículo</th><th>Última vistoria</th><th></th></tr></thead>
+        <tbody>
+          {% for v in veiculos_sem_vistoria_recente %}
+          <tr>
+            <td>{{ v['placa'] }} - {{ v['marca'] }} {{ v['modelo'] }}</td>
+            <td>{{ v['ultima_vistoria'] | databr if v['ultima_vistoria'] else 'Nunca vistoriado' }}</td>
+            <td><a href="{{ url_for('vistorias.nova', veiculo_id=v['id']) }}" class="btn btn-sm btn-primario">Registrar vistoria</a></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="subtitulo">Todos os veículos alugados estão com vistoria em dia.</p>
+    {% endif %}
+  </div>
+
+  <div class="painel">
+    <h2>🕓 Últimas locações</h2>
+    {% if ultimas_locacoes %}
+    <div class="tabela-wrap">
+      <table class="painel-tabela">
+        <thead><tr><th>Cliente</th><th>Veículo</th><th>Início</th><th>Status</th></tr></thead>
+        <tbody>
+          {% for l in ultimas_locacoes %}
+          <tr>
+            <td><a href="{{ url_for('locacoes.detalhe', id=l['id']) }}">{{ l['cliente_nome'] }}</a></td>
+            <td>{{ l['placa'] }}</td>
+            <td>{{ l['data_inicio'] | databr }}</td>
+            <td><span class="badge badge-azul">{{ l['status'] }}</span></td>
+          </tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
+    {% else %}
+    <p class="subtitulo">Nenhuma locação cadastrada ainda. <a href="{{ url_for('locacoes.nova') }}">Criar a primeira</a>.</p>
+    {% endif %}
+  </div>
+</div>
+{% endblock %}

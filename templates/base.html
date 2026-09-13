@@ -1,0 +1,62 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>{% block titulo %}Painel{% endblock %} · {{ app_name }}</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
+</head>
+<body>
+{% if usuario_logado %}
+<div class="layout">
+  <aside class="sidebar" id="sidebar">
+    <div class="marca">
+      <span class="marca-icone">🚗</span>
+      <span class="marca-texto">{{ app_name }}<br><small>{{ app_tagline }}</small></span>
+    </div>
+    <nav class="nav">
+      <a href="{{ url_for('dashboard.index') }}" class="{{ 'ativo' if request.endpoint == 'dashboard.index' }}">📊 Painel</a>
+      <a href="{{ url_for('locacoes.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('locacoes.') }}">📄 Locações</a>
+      <a href="{{ url_for('veiculos.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('veiculos.') }}">🚘 Veículos</a>
+      <a href="{{ url_for('clientes.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('clientes.') }}">👤 Clientes</a>
+      <a href="{{ url_for('financeiro.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('financeiro.') }}">💰 Financeiro</a>
+      <a href="{{ url_for('vistorias.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('vistorias.') }}">🔍 Vistorias</a>
+      <a href="{{ url_for('proprietarios.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('proprietarios.') }}">🧾 Proprietários</a>
+      {% if usuario_papel == 'admin' %}
+      <a href="{{ url_for('usuarios.listar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('usuarios.') }}">👥 Usuários</a>
+      <a href="{{ url_for('configuracoes.editar') }}" class="{{ 'ativo' if request.endpoint and request.endpoint.startswith('configuracoes.') }}">⚙️ Configurações</a>
+      {% endif %}
+    </nav>
+    <div class="sidebar-rodape">
+      <form action="{{ url_for('auth.alterar_senha') }}" method="post" class="mini-form" onsubmit="return confirmarSenha(event)">
+        <details>
+          <summary>🔑 Alterar senha</summary>
+          <input type="password" name="senha_atual" placeholder="Senha atual" required>
+          <input type="password" name="senha_nova" placeholder="Nova senha (mín. 6)" required minlength="6">
+          <button type="submit" class="btn btn-sm btn-outline">Salvar</button>
+        </details>
+      </form>
+      <a href="{{ url_for('auth.logout') }}" class="sair">🚪 Sair ({{ usuario_logado }}{% if usuario_papel %} · {{ 'Admin' if usuario_papel == 'admin' else 'Operador' }}{% endif %})</a>
+    </div>
+  </aside>
+
+  <button class="menu-toggle" onclick="document.getElementById('sidebar').classList.toggle('aberto')">☰</button>
+
+  <main class="conteudo">
+    {% include "_flash.html" %}
+    {% block conteudo %}{% endblock %}
+    {% include "_rodape_legal.html" %}
+  </main>
+</div>
+{% else %}
+  {% include "_flash.html" %}
+  {% block conteudo_publico %}{% endblock %}
+  <div class="rodape-legal-publico">
+    {% include "_rodape_legal.html" %}
+  </div>
+{% endif %}
+<script>
+function confirmarSenha(e){ return true; }
+</script>
+</body>
+</html>
