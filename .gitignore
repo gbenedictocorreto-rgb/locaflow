@@ -1,0 +1,14 @@
+__pycache__/
+*.pyc
+instance/
+static/uploads/contratos/*
+static/uploads/vistorias/*
+static/uploads/veiculos/*
+static/uploads/empresa/*
+!static/uploads/contratos/.gitkeep
+!static/uploads/vistorias/.gitkeep
+!static/uploads/veiculos/.gitkeep
+!static/uploads/empresa/.gitkeep
+.env
+venv/
+.venv/
