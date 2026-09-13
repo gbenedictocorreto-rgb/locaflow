@@ -67,6 +67,81 @@
 </div>
 
 <div class="painel">
+  <h2>Financiamento</h2>
+  {% if veiculo['financiado'] %}
+    {% set total = veiculo['financiamento_parcelas_total'] or 0 %}
+    {% set pagas = veiculo['financiamento_parcelas_pagas'] or 0 %}
+    {% set pct = ((pagas / total) * 100) if total else 0 %}
+    <div class="info-grid">
+      <div class="info-item"><div class="rotulo">Valor da parcela</div><div class="valor-info">{{ veiculo['financiamento_valor_parcela'] | moeda }}</div></div>
+      <div class="info-item"><div class="rotulo">Parcelas pagas</div><div class="valor-info">{{ pagas }} de {{ total }}</div></div>
+      <div class="info-item"><div class="rotulo">Faltam</div><div class="valor-info">{{ (total - pagas) if total > pagas else 0 }} parcela(s)</div></div>
+    </div>
+    <div class="financiamento-barra"><div class="financiamento-barra-preenchida" style="width: {{ pct }}%"></div></div>
+  {% else %}
+    <p class="subtitulo">Veículo não financiado (quitado ou próprio).</p>
+  {% endif %}
+</div>
+
+<div class="painel">
+  <h2>Custos adicionais (manutenção, IPVA, outros)</h2>
+  {% if custos %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Tipo</th><th>Descrição</th><th>Data</th><th>Valor</th><th></th></tr></thead>
+      <tbody>
+        {% for c in custos %}
+        <tr>
+          <td>{{ {'manutencao':'Manutenção','ipva':'IPVA','outro':'Outro'}.get(c['tipo'], c['tipo']) }}</td>
+          <td>{{ c['descricao'] or '-' }}</td>
+          <td>{{ c['data'] | databr }}</td>
+          <td>{{ c['valor'] | moeda }}</td>
+          <td>
+            {% if usuario_papel == 'admin' %}
+            <form method="post" action="{{ url_for('veiculos.custo_excluir', custo_id=c['id']) }}" class="form-inline" onsubmit="return confirm('Remover este custo?')">
+              <button class="btn btn-sm btn-perigo" type="submit">Remover</button>
+            </form>
+            {% endif %}
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhum custo lançado para este veículo ainda.</p>
+  {% endif %}
+
+  <form method="post" action="{{ url_for('veiculos.custo_novo', id=veiculo['id']) }}" class="form-padrao" style="margin-top:14px">
+    <div class="grid-3">
+      <div class="campo">
+        <label>Tipo</label>
+        <select name="tipo">
+          <option value="manutencao">Manutenção</option>
+          <option value="ipva">IPVA</option>
+          <option value="outro">Outro</option>
+        </select>
+      </div>
+      <div class="campo">
+        <label>Valor (R$)</label>
+        <input type="number" step="0.01" name="valor" required>
+      </div>
+      <div class="campo">
+        <label>Data</label>
+        <input type="date" name="data">
+      </div>
+    </div>
+    <div class="campo">
+      <label>Descrição</label>
+      <input type="text" name="descricao" placeholder="Ex.: Troca de óleo, revisão dos freios...">
+    </div>
+    <div class="acoes">
+      <button type="submit" class="btn btn-primario">+ Lançar custo</button>
+    </div>
+  </form>
+</div>
+
+<div class="painel">
   <h2>Histórico de locações</h2>
   {% if locacoes %}
   <div class="tabela-wrap">

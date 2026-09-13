@@ -114,6 +114,28 @@
     </div>
   </fieldset>
 
+  <fieldset>
+    <legend>Financiamento do veículo</legend>
+    <div class="campo checkbox-linha">
+      <input type="checkbox" id="financiado" name="financiado" onchange="alternarCamposFinanciamento()" {{ 'checked' if veiculo and veiculo['financiado'] }}>
+      <label for="financiado" style="margin:0">Este veículo é financiado</label>
+    </div>
+    <div class="grid-3" id="camposFinanciamento">
+      <div class="campo">
+        <label>Valor da parcela (R$)</label>
+        <input type="number" step="0.01" name="financiamento_valor_parcela" value="{{ veiculo['financiamento_valor_parcela'] if veiculo and veiculo['financiamento_valor_parcela'] is not none else '' }}">
+      </div>
+      <div class="campo">
+        <label>Parcelas já pagas</label>
+        <input type="number" name="financiamento_parcelas_pagas" value="{{ veiculo['financiamento_parcelas_pagas'] if veiculo and veiculo['financiamento_parcelas_pagas'] is not none else '' }}">
+      </div>
+      <div class="campo">
+        <label>Total de parcelas</label>
+        <input type="number" name="financiamento_parcelas_total" value="{{ veiculo['financiamento_parcelas_total'] if veiculo and veiculo['financiamento_parcelas_total'] is not none else '' }}">
+      </div>
+    </div>
+  </fieldset>
+
   <div class="campo">
     <label>Observações</label>
     <textarea name="observacoes">{{ veiculo['observacoes'] if veiculo else '' }}</textarea>
@@ -124,4 +146,11 @@
     <a href="{{ url_for('veiculos.listar') }}" class="btn">Cancelar</a>
   </div>
 </form>
+<script>
+  function alternarCamposFinanciamento() {
+    var marcado = document.getElementById('financiado').checked;
+    document.getElementById('camposFinanciamento').style.opacity = marcado ? '1' : '.5';
+  }
+  alternarCamposFinanciamento();
+</script>
 {% endblock %}

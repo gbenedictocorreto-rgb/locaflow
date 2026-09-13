@@ -1,0 +1,127 @@
+{% extends "base.html" %}
+{% block titulo %}{{ proprietario['nome'] }}{% endblock %}
+{% block conteudo %}
+<div class="pagina-header">
+  <div>
+    <h1>{{ proprietario['nome'] }}</h1>
+    <div class="subtitulo">Proprietário (locador) · {{ veiculos | length }} veículo(s) administrado(s)</div>
+  </div>
+  <div class="acoes">
+    <a href="{{ url_for('proprietarios.editar', id=proprietario['id']) }}" class="btn">Editar</a>
+    <a href="{{ url_for('proprietarios.listar') }}" class="btn">Voltar</a>
+  </div>
+</div>
+
+<div class="cards-grid">
+  <div class="card destaque-azul">
+    <div class="rotulo">Receita bruta (mês)</div>
+    <div class="valor">{{ receita_mes | moeda }}</div>
+    <div class="subtitulo">Aluguéis pagos dos veículos deste proprietário</div>
+  </div>
+  <div class="card destaque-amarelo">
+    <div class="rotulo">Lucro da administradora</div>
+    <div class="valor">{{ lucro_admin_semana | moeda }} <small>na semana</small></div>
+    <div class="subtitulo">{{ lucro_admin_mes | moeda }} no mês · {{ admin_pct | round(1) }}% da receita</div>
+  </div>
+  <div class="card destaque-verde">
+    <div class="rotulo">Ganho do proprietário (mês)</div>
+    <div class="valor">{{ ganho_liquido_proprietario_mes | moeda }}</div>
+    <div class="subtitulo">Já descontando manutenção, IPVA e parcelas de financiamento</div>
+  </div>
+  <div class="card destaque-vermelho">
+    <div class="rotulo">Custos do mês</div>
+    <div class="valor">{{ (custos_mes + parcelas_mes) | moeda }}</div>
+    <div class="subtitulo">{{ custos_mes | moeda }} manutenção/IPVA/outros + {{ parcelas_mes | moeda }} parcelas</div>
+  </div>
+</div>
+
+<div class="duas-colunas">
+  <div class="painel">
+    <h2>Dados do proprietário</h2>
+    <div class="info-grid">
+      <div class="info-item"><div class="rotulo">Documento</div><div class="valor-info">{{ proprietario['documento'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Telefone</div><div class="valor-info">{{ proprietario['telefone'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">E-mail</div><div class="valor-info">{{ proprietario['email'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">Chave PIX</div><div class="valor-info">{{ proprietario['chave_pix'] or '-' }}</div></div>
+      <div class="info-item"><div class="rotulo">% de repasse</div><div class="valor-info">{{ repasse_pct | round(1) }}%</div></div>
+      <div class="info-item"><div class="rotulo">Nascimento</div><div class="valor-info">{{ proprietario['data_nascimento'] | databr if proprietario['data_nascimento'] else '-' }}</div></div>
+    </div>
+    {% if proprietario['telefone'] %}
+    {% set tel_limpo = proprietario['telefone'] | replace('(', '') | replace(')', '') | replace(' ', '') | replace('-', '') %}
+    <a class="btn btn-sm btn-sucesso" style="margin-top:12px" target="_blank" rel="noopener" href="https://wa.me/55{{ tel_limpo }}">&#128172; Falar por WhatsApp</a>
+    {% endif %}
+    {% if proprietario['observacoes'] %}<p style="margin-top:14px"><strong>Observações:</strong> {{ proprietario['observacoes'] }}</p>{% endif %}
+  </div>
+
+  <div class="painel">
+    <h2>Receita dos últimos 6 meses</h2>
+    <div class="grafico-barras">
+      {% for item in grafico %}
+      <div class="grafico-barra-col">
+        <div class="grafico-barra-valor">{{ item.valor | moeda if item.valor else '' }}</div>
+        <div class="grafico-barra" style="height: {{ item.altura_pct }}%"></div>
+        <div class="grafico-barra-legenda">{{ item.mes }}</div>
+      </div>
+      {% endfor %}
+    </div>
+  </div>
+</div>
+
+<div class="painel">
+  <h2>Veículos deste proprietário</h2>
+  {% if veiculos %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Placa</th><th>Modelo</th><th>Status</th><th>Financiamento</th><th></th></tr></thead>
+      <tbody>
+        {% for v in veiculos %}
+        <tr>
+          <td>{{ v['placa'] }}</td>
+          <td>{{ v['marca'] }} {{ v['modelo'] }}</td>
+          <td>
+            {% set cor = {'disponivel':'verde','alugado':'azul','manutencao':'amarelo','inativo':'cinza'}[v['status']] %}
+            <span class="badge badge-{{ cor }}">{{ v['status'] }}</span>
+          </td>
+          <td>
+            {% if v['financiado'] %}
+              {{ v['financiamento_parcelas_pagas'] or 0 }}/{{ v['financiamento_parcelas_total'] or 0 }} parcelas
+              ({{ v['financiamento_valor_parcela'] | moeda }}/mês)
+            {% else %}
+              Quitado / não financiado
+            {% endif %}
+          </td>
+          <td><a href="{{ url_for('veiculos.detalhe', id=v['id']) }}" class="btn btn-sm">Ver</a></td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhum veículo cadastrado para este proprietário ainda.</p>
+  {% endif %}
+</div>
+
+<div class="painel">
+  <h2>Custos recentes (manutenção, IPVA e outros)</h2>
+  {% if custos_recentes %}
+  <div class="tabela-wrap">
+    <table class="painel-tabela">
+      <thead><tr><th>Veículo</th><th>Tipo</th><th>Descrição</th><th>Data</th><th>Valor</th></tr></thead>
+      <tbody>
+        {% for c in custos_recentes %}
+        <tr>
+          <td>{{ c['placa'] }}</td>
+          <td>{{ {'manutencao':'Manutenção','ipva':'IPVA','outro':'Outro'}.get(c['tipo'], c['tipo']) }}</td>
+          <td>{{ c['descricao'] or '-' }}</td>
+          <td>{{ c['data'] | databr }}</td>
+          <td>{{ c['valor'] | moeda }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+  {% else %}
+  <p class="subtitulo">Nenhum custo lançado ainda. Registre custos na tela de cada veículo.</p>
+  {% endif %}
+</div>
+{% endblock %}

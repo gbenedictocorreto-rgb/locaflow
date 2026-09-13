@@ -224,6 +224,10 @@ legend { font-weight: 700; padding: 0 6px; font-size: 13.5px; color: var(--cinza
 
 .aviso-box { background: var(--amarelo-claro); border: 1px solid #fde68a; color: #92400e; padding: 12px 14px; border-radius: 8px; font-size: 13.5px; margin-bottom: 16px; }
 
+/* ---- Link de vistoria copiável (painel da locação) ---- */
+.link-copiavel { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+.link-copiavel input[type="text"] { flex: 1 1 260px; min-width: 0; font-family: monospace; font-size: 12.5px; padding: 8px 10px; border: 1px solid var(--cinza-200); border-radius: 8px; background: var(--cinza-100); color: var(--cinza-700); }
+
 /* ---- Páginas institucionais (privacidade, termos) ---- */
 .doc-legal { max-width: 780px; }
 .doc-legal h2 { font-size: 15.5px; margin-top: 22px; margin-bottom: 8px; color: var(--cinza-900); }
@@ -247,6 +251,20 @@ legend { font-weight: 700; padding: 0 6px; font-size: 13.5px; color: var(--cinza
   .conteudo { padding: 70px 16px 30px; }
 }
 
-/* ---- Link de vistoria copiável (painel da locação) ---- */
-.link-copiavel { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-.link-copiavel input[type="text"] { flex: 1 1 260px; min-width: 0; font-family: monospace; font-size: 12.5px; padding: 8px 10px; border: 1px solid var(--cinza-200); border-radius: 8px; background: var(--cinza-100); color: var(--cinza-700); }
+/* ---- Banner de login (imagem própria da marca) ---- */
+.login-banner-img { width: 100%; max-width: 440px; border-radius: 14px; box-shadow: 0 10px 30px rgba(0,0,0,.35); }
+
+/* ---- Gráfico de barras simples (sem bibliotecas externas) ---- */
+.grafico-barras { display: flex; align-items: flex-end; gap: 10px; height: 180px; padding-top: 20px; }
+.grafico-barra-col { flex: 1; display: flex; flex-direction: column; align-items: center; justify-content: flex-end; height: 100%; }
+.grafico-barra-valor { font-size: 11px; color: var(--cinza-500); margin-bottom: 4px; white-space: nowrap; }
+.grafico-barra { width: 100%; max-width: 34px; min-height: 3px; background: linear-gradient(180deg, var(--azul), var(--azul-escuro)); border-radius: 5px 5px 0 0; transition: height .3s ease; }
+.grafico-barra-legenda { font-size: 12px; color: var(--cinza-500); margin-top: 6px; }
+
+/* ---- Financiamento do veículo ---- */
+.financiamento-barra { background: var(--cinza-200); border-radius: 6px; height: 10px; overflow: hidden; margin-top: 6px; }
+.financiamento-barra-preenchida { background: var(--verde); height: 100%; }
+
+/* ---- Aniversariantes do dia (Painel) ---- */
+.aniversariante-item { display: flex; align-items: center; justify-content: space-between; padding: 8px 0; border-bottom: 1px solid var(--cinza-100); }
+.aniversariante-item:last-child { border-bottom: none; }

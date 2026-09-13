@@ -29,6 +29,7 @@
           <td>{{ p['telefone'] or '-' }}</td>
           <td>{{ contagem.get(p['id'], 0) }}</td>
           <td class="acoes">
+            <a href="{{ url_for('proprietarios.detalhe', id=p['id']) }}" class="btn btn-sm btn-primario">Ver</a>
             <a href="{{ url_for('proprietarios.editar', id=p['id']) }}" class="btn btn-sm">Editar</a>
             {% if usuario_papel == 'admin' %}
             <form method="post" action="{{ url_for('proprietarios.excluir', id=p['id']) }}" class="form-inline" onsubmit="return confirm('Excluir este proprietário?')">
