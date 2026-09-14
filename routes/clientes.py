@@ -114,6 +114,7 @@ def _salvar(id):
         f.get("antecedentes_observacao", "").strip(),
         f.get("antecedentes_data", "").strip() or None,
         score_manual,
+        f.get("data_nascimento", "").strip() or None,
         f.get("observacoes", "").strip(),
     )
     if not dados[0]:
@@ -123,7 +124,7 @@ def _salvar(id):
         execute(
             """UPDATE clientes SET nome=?, cpf=?, rg=?, cnh=?, cnh_validade=?, telefone=?, email=?,
                endereco=?, antecedentes_verificado=?, antecedentes_link=?, antecedentes_observacao=?,
-               antecedentes_data=?, score_manual=?, observacoes=? WHERE id=?""",
+               antecedentes_data=?, score_manual=?, data_nascimento=?, observacoes=? WHERE id=?""",
             dados + (id,),
         )
         return id
@@ -131,6 +132,6 @@ def _salvar(id):
         return execute(
             """INSERT INTO clientes (nome, cpf, rg, cnh, cnh_validade, telefone, email, endereco,
                antecedentes_verificado, antecedentes_link, antecedentes_observacao, antecedentes_data,
-               score_manual, observacoes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
+               score_manual, data_nascimento, observacoes) VALUES (?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)""",
             dados,
         )

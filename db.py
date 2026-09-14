@@ -24,6 +24,13 @@ def close_db(e=None):
 # sistema. Cada entrada é (tabela, coluna, definição SQL para ALTER TABLE).
 MIGRACOES_COLUNAS = [
     ("usuarios", "ativo", "INTEGER NOT NULL DEFAULT 1"),
+    ("clientes", "data_nascimento", "TEXT"),
+    ("proprietarios", "data_nascimento", "TEXT"),
+    ("locacoes", "tipo_plano", "TEXT NOT NULL DEFAULT 'diaria'"),
+    ("veiculos", "financiado", "INTEGER NOT NULL DEFAULT 0"),
+    ("veiculos", "financiamento_valor_parcela", "REAL"),
+    ("veiculos", "financiamento_parcelas_pagas", "INTEGER"),
+    ("veiculos", "financiamento_parcelas_total", "INTEGER"),
 ]
 
 

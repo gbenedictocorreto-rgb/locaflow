@@ -29,6 +29,7 @@ CREATE TABLE IF NOT EXISTS proprietarios (
     email TEXT,
     chave_pix TEXT,
     percentual_repasse REAL, -- % que fica com o proprietário, se aplicável
+    data_nascimento TEXT,
     observacoes TEXT,
     criado_em TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -53,6 +54,10 @@ CREATE TABLE IF NOT EXISTS veiculos (
     seguradora_telefone_24h TEXT,
     status TEXT NOT NULL DEFAULT 'disponivel', -- disponivel, alugado, manutencao, inativo
     foto_path TEXT,
+    financiado INTEGER NOT NULL DEFAULT 0, -- 0/1: veículo é financiado?
+    financiamento_valor_parcela REAL,
+    financiamento_parcelas_pagas INTEGER,
+    financiamento_parcelas_total INTEGER,
     observacoes TEXT,
     criado_em TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (proprietario_id) REFERENCES proprietarios(id) ON DELETE SET NULL
@@ -73,6 +78,7 @@ CREATE TABLE IF NOT EXISTS clientes (
     antecedentes_observacao TEXT,
     antecedentes_data TEXT,
     score_manual TEXT, -- bom, regular, ruim, NULL = automático
+    data_nascimento TEXT,
     observacoes TEXT,
     criado_em TEXT NOT NULL DEFAULT (datetime('now'))
 );
@@ -87,6 +93,7 @@ CREATE TABLE IF NOT EXISTS locacoes (
     km_inicial INTEGER,
     km_final INTEGER,
     valor_diaria REAL NOT NULL DEFAULT 0,
+    tipo_plano TEXT NOT NULL DEFAULT 'diaria', -- diaria, semanal, mensal
     valor_total_previsto REAL DEFAULT 0,
     caucao_valor REAL DEFAULT 0,
     caucao_status TEXT NOT NULL DEFAULT 'sem_caucao', -- sem_caucao, retido, devolvido, parcial, retido_para_danos
@@ -145,6 +152,9 @@ CREATE TABLE IF NOT EXISTS vistoria_fotos (
     FOREIGN KEY (vistoria_id) REFERENCES vistorias(id) ON DELETE CASCADE
 );
 
+-- Link público (token) para o motorista/cliente enviar a vistoria (fotos + KM)
+-- sem precisar de login. Cada locação pode ter um link ativo por vez; ao gerar
+-- um novo, o(s) anterior(es) são desativados (ativo=0), não apagados.
 CREATE TABLE IF NOT EXISTS vistoria_links (
     id INTEGER PRIMARY KEY AUTOINCREMENT,
     locacao_id INTEGER NOT NULL,
@@ -152,6 +162,19 @@ CREATE TABLE IF NOT EXISTS vistoria_links (
     ativo INTEGER NOT NULL DEFAULT 1,
     criado_em TEXT NOT NULL DEFAULT (datetime('now')),
     FOREIGN KEY (locacao_id) REFERENCES locacoes(id) ON DELETE CASCADE
+);
+
+-- Custos adicionais de cada veículo (manutenção, IPVA, outros), usados para
+-- calcular quanto sobra de lucro para o proprietário do veículo por mês.
+CREATE TABLE IF NOT EXISTS custos_veiculo (
+    id INTEGER PRIMARY KEY AUTOINCREMENT,
+    veiculo_id INTEGER NOT NULL,
+    tipo TEXT NOT NULL DEFAULT 'manutencao', -- manutencao, ipva, outro
+    descricao TEXT,
+    valor REAL NOT NULL DEFAULT 0,
+    data TEXT NOT NULL DEFAULT (date('now')),
+    criado_em TEXT NOT NULL DEFAULT (datetime('now')),
+    FOREIGN KEY (veiculo_id) REFERENCES veiculos(id) ON DELETE CASCADE
 );
 
 -- Configurações da empresa/locadora que usa este sistema (linha única, id sempre 1).
@@ -178,3 +201,4 @@ CREATE INDEX IF NOT EXISTS idx_financeiro_status ON financeiro(status);
 CREATE INDEX IF NOT EXISTS idx_financeiro_cliente ON financeiro(cliente_id);
 CREATE INDEX IF NOT EXISTS idx_vistorias_veiculo ON vistorias(veiculo_id);
 CREATE INDEX IF NOT EXISTS idx_vistoria_links_locacao ON vistoria_links(locacao_id);
+CREATE INDEX IF NOT EXISTS idx_custos_veiculo_veiculo ON custos_veiculo(veiculo_id);

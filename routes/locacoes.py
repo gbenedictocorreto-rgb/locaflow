@@ -1,3 +1,4 @@
+import math
 import secrets
 from datetime import datetime, date
 from flask import Blueprint, render_template, request, redirect, url_for, flash, current_app
@@ -18,6 +19,11 @@ CAUCAO_LABELS = {
     "devolvido": "Devolvido",
     "parcial": "Devolvido parcialmente",
     "retido_para_danos": "Retido p/ cobrir danos",
+}
+PLANO_LABELS = {
+    "diaria": "Diária",
+    "semanal": "Semanal",
+    "mensal": "Mensal",
 }
 
 
@@ -67,7 +73,8 @@ def nova():
             flash(str(e), "erro")
 
     return render_template(
-        "locacoes/form.html", clientes=clientes, veiculos=veiculos, veiculo_pre=veiculo_pre
+        "locacoes/form.html", clientes=clientes, veiculos=veiculos, veiculo_pre=veiculo_pre,
+        plano_labels=PLANO_LABELS,
     )
 
 
@@ -79,6 +86,9 @@ def _criar(f):
     valor_diaria = parse_float(f.get("valor_diaria"), 0)
     km_inicial = parse_int(f.get("km_inicial"))
     caucao_valor = parse_float(f.get("caucao_valor"), 0)
+    tipo_plano = f.get("tipo_plano", "diaria").strip()
+    if tipo_plano not in PLANO_LABELS:
+        tipo_plano = "diaria"
 
     if not cliente_id or not veiculo_id or not data_inicio:
         raise ValueError("Cliente, veículo e data de início são obrigatórios.")
@@ -97,16 +107,26 @@ def _criar(f):
             dias = max((d2 - d1).days, 1)
         except ValueError:
             dias = 1
-    valor_total_previsto = round(valor_diaria * dias, 2)
+
+    # O valor cadastrado é o valor de cada período do plano (diária, semana ou
+    # mês); o total previsto é esse valor multiplicado pela quantidade de
+    # períodos que cabem no prazo da locação.
+    if tipo_plano == "semanal":
+        unidades = max(math.ceil(dias / 7), 1)
+    elif tipo_plano == "mensal":
+        unidades = max(math.ceil(dias / 30), 1)
+    else:
+        unidades = dias
+    valor_total_previsto = round(valor_diaria * unidades, 2)
 
     locacao_id = execute(
         """INSERT INTO locacoes (cliente_id, veiculo_id, data_inicio, data_fim_prevista, km_inicial,
-           valor_diaria, valor_total_previsto, caucao_valor, caucao_status, status, observacoes)
-           VALUES (?,?,?,?,?,?,?,?,?,?,?)""",
+           valor_diaria, tipo_plano, valor_total_previsto, caucao_valor, caucao_status, status, observacoes)
+           VALUES (?,?,?,?,?,?,?,?,?,?,?,?)""",
         (
             cliente_id, veiculo_id, data_inicio, data_fim_prevista,
             km_inicial if km_inicial is not None else veiculo["km_atual"],
-            valor_diaria, valor_total_previsto, caucao_valor,
+            valor_diaria, tipo_plano, valor_total_previsto, caucao_valor,
             "retido" if caucao_valor > 0 else "sem_caucao",
             "ativa", f.get("observacoes", "").strip(),
         ),
@@ -165,6 +185,7 @@ def detalhe(id):
         "locacoes/detail.html", locacao=locacao, contratos=contratos, financeiro=financeiro,
         vistorias=vistorias, status_labels=STATUS_LABELS, caucao_labels=CAUCAO_LABELS,
         vistoria_link=vistoria_link, vistoria_link_url=vistoria_link_url,
+        plano_labels=PLANO_LABELS,
     )
 
 

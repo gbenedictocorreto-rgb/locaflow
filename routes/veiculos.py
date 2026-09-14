@@ -88,10 +88,59 @@ def detalhe(id):
     vistorias = query_all(
         "SELECT * FROM vistorias WHERE veiculo_id = ? ORDER BY data DESC LIMIT 10", (id,)
     )
+    custos = query_all(
+        "SELECT * FROM custos_veiculo WHERE veiculo_id = ? ORDER BY data DESC, id DESC LIMIT 20", (id,)
+    )
     return render_template(
         "veiculos/detail.html", veiculo=veiculo, locacoes=locacoes, vistorias=vistorias,
-        status_labels=STATUS_LABELS,
+        status_labels=STATUS_LABELS, custos=custos,
     )
+
+
+@bp.route("/<int:id>/custos/novo", methods=["POST"])
+@login_required
+def custo_novo(id):
+    veiculo = query_one("SELECT id FROM veiculos WHERE id = ?", (id,))
+    if not veiculo:
+        flash("Veículo não encontrado.", "erro")
+        return redirect(url_for("veiculos.listar"))
+
+    tipo = request.form.get("tipo", "manutencao").strip()
+    if tipo not in ("manutencao", "ipva", "outro"):
+        tipo = "outro"
+    valor = parse_float(request.form.get("valor"), 0)
+    descricao = request.form.get("descricao", "").strip()
+    data_custo = request.form.get("data", "").strip() or None
+
+    if valor <= 0:
+        flash("Informe um valor válido para o custo.", "erro")
+        return redirect(url_for("veiculos.detalhe", id=id))
+
+    if data_custo:
+        execute(
+            "INSERT INTO custos_veiculo (veiculo_id, tipo, descricao, valor, data) VALUES (?,?,?,?,?)",
+            (id, tipo, descricao, valor, data_custo),
+        )
+    else:
+        execute(
+            "INSERT INTO custos_veiculo (veiculo_id, tipo, descricao, valor) VALUES (?,?,?,?)",
+            (id, tipo, descricao, valor),
+        )
+    flash("Custo registrado.", "sucesso")
+    return redirect(url_for("veiculos.detalhe", id=id))
+
+
+@bp.route("/custos/<int:custo_id>/excluir", methods=["POST"])
+@login_required
+@admin_required
+def custo_excluir(custo_id):
+    custo = query_one("SELECT veiculo_id FROM custos_veiculo WHERE id = ?", (custo_id,))
+    if custo:
+        execute("DELETE FROM custos_veiculo WHERE id = ?", (custo_id,))
+        flash("Custo removido.", "sucesso")
+        return redirect(url_for("veiculos.detalhe", id=custo["veiculo_id"]))
+    flash("Custo não encontrado.", "erro")
+    return redirect(url_for("veiculos.listar"))
 
 
 @bp.route("/<int:id>/excluir", methods=["POST"])
@@ -133,6 +182,10 @@ def _salvar(id):
         f.get("seguradora_apolice", "").strip(),
         f.get("seguradora_telefone_24h", "").strip(),
         f.get("status", "disponivel"),
+        1 if f.get("financiado") == "on" else 0,
+        parse_float(f.get("financiamento_valor_parcela"), None),
+        parse_int(f.get("financiamento_parcelas_pagas"), None),
+        parse_int(f.get("financiamento_parcelas_total"), None),
         f.get("observacoes", "").strip(),
     ]
 
@@ -143,7 +196,8 @@ def _salvar(id):
         sql = """UPDATE veiculos SET placa=?, renavam=?, chassi=?, marca=?, modelo=?, ano_fabricacao=?,
                   ano_modelo=?, cor=?, km_atual=?, valor_diaria_padrao=?, proprietario_id=?,
                   rastreador_link=?, rastreador_login=?, seguradora_nome=?, seguradora_apolice=?,
-                  seguradora_telefone_24h=?, status=?, observacoes=?"""
+                  seguradora_telefone_24h=?, status=?, financiado=?, financiamento_valor_parcela=?,
+                  financiamento_parcelas_pagas=?, financiamento_parcelas_total=?, observacoes=?"""
         params = list(dados)
         if foto_path:
             sql += ", foto_path=?"
@@ -155,7 +209,9 @@ def _salvar(id):
     else:
         sql = """INSERT INTO veiculos (placa, renavam, chassi, marca, modelo, ano_fabricacao, ano_modelo,
                   cor, km_atual, valor_diaria_padrao, proprietario_id, rastreador_link, rastreador_login,
-                  seguradora_nome, seguradora_apolice, seguradora_telefone_24h, status, observacoes"""
+                  seguradora_nome, seguradora_apolice, seguradora_telefone_24h, status, financiado,
+                  financiamento_valor_parcela, financiamento_parcelas_pagas, financiamento_parcelas_total,
+                  observacoes"""
         params = list(dados)
         if foto_path:
             sql += ", foto_path) VALUES (" + ",".join(["?"] * (len(params) + 1)) + ")"
